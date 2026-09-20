@@ -25,7 +25,7 @@ class DatabaseSeeder extends Seeder
 
         $this->seedPushDay($user);
         $this->seedLegDay($user);
-        $this->seedMorningRun($user);
+        $this->seedCardioSessions($user);
         $this->seedRecentHistory($user);
     }
 
@@ -76,18 +76,44 @@ class DatabaseSeeder extends Seeder
         ]);
     }
 
-    private function seedMorningRun(User $user): void
+    private function seedCardioSessions(User $user): void
     {
         $workout = $user->workouts()->create([
             'title' => 'Morning Run',
             'performed_at' => now()->subDay()->setTime(7, 0),
         ]);
 
-        $workout->exercises()->create([
-            'name' => 'Run',
-            'type' => ExerciseType::Cardio,
-            'duration_seconds' => 1930, // 32:10
-            'distance_miles' => 3.10,
+        $this->addCardioExercises($workout, [
+            ['name' => 'Run', 'duration_seconds' => 1930, 'distance_miles' => 3.10],
+        ]);
+
+        $workout = $user->workouts()->create([
+            'title' => 'Interval Session',
+            'performed_at' => now()->subDays(3)->setTime(6, 45),
+            'notes' => 'Treadmill sprints, then walked it off.',
+        ]);
+
+        $this->addCardioExercises($workout, [
+            ['name' => 'Treadmill Run', 'duration_seconds' => 1200, 'distance_miles' => 2.20],
+            ['name' => 'Incline Walk', 'duration_seconds' => 600, 'distance_miles' => 0.55],
+        ]);
+
+        $workout = $user->workouts()->create([
+            'title' => 'Long Ride',
+            'performed_at' => now()->subDays(7)->setTime(9, 15),
+        ]);
+
+        $this->addCardioExercises($workout, [
+            ['name' => 'Cycling', 'duration_seconds' => 4320, 'distance_miles' => 18.40],
+        ]);
+
+        $workout = $user->workouts()->create([
+            'title' => 'Conditioning',
+            'performed_at' => now()->subDays(9)->setTime(12, 30),
+        ]);
+
+        $this->addCardioExercises($workout, [
+            ['name' => 'Rowing', 'duration_seconds' => 900, 'distance_miles' => 1.55],
         ]);
     }
 
@@ -110,6 +136,19 @@ class DatabaseSeeder extends Seeder
                 ->create(['name' => $name])
                 ->sets()
                 ->createMany($sets);
+        }
+    }
+
+    /**
+     * @param  list<array{name: string, duration_seconds: int, distance_miles: float|null}>  $exercises
+     */
+    private function addCardioExercises(Workout $workout, array $exercises): void
+    {
+        foreach ($exercises as $exercise) {
+            $workout->exercises()->create([
+                ...$exercise,
+                'type' => ExerciseType::Cardio,
+            ]);
         }
     }
 }
