@@ -15,6 +15,7 @@ class ExerciseSet extends Model
     protected $fillable = [
         'reps',
         'weight',
+        'completed_at',
     ];
 
     /**
@@ -33,6 +34,7 @@ class ExerciseSet extends Model
         return [
             'reps' => 'integer',
             'weight' => 'decimal:2',
+            'completed_at' => 'datetime',
         ];
     }
 }
