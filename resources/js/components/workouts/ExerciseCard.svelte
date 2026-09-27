@@ -1,12 +1,11 @@
 <script lang="ts">
     import { router } from '@inertiajs/svelte';
-    import Dumbbell from '@lucide/svelte/icons/dumbbell';
     import Plus from '@lucide/svelte/icons/plus';
-    import Timer from '@lucide/svelte/icons/timer';
+    import X from '@lucide/svelte/icons/x';
     import { untrack } from 'svelte';
     import ExerciseController from '@/actions/App/Http/Controllers/ExerciseController';
     import ExerciseSetController from '@/actions/App/Http/Controllers/ExerciseSetController';
-    import { Input } from '@/components/ui/input';
+    import ConfirmDialog from '@/components/ConfirmDialog.svelte';
     import SetRow from '@/components/workouts/SetRow.svelte';
     import { formatDuration } from '@/lib/datetime';
     import type { Exercise, ExerciseSet, SetDraft, Workout } from '@/types';
@@ -57,6 +56,10 @@
         ),
     );
 
+    const volumeLabel = $derived(
+        totalVolume === 0 ? 'BW' : totalVolume.toLocaleString(),
+    );
+
     function withSets(props: { workout: Workout }, sets: ExerciseSet[]) {
         return {
             workout: {
@@ -102,6 +105,21 @@
             .delete(ExerciseSetController.destroy.url(id), visit);
     }
 
+    let confirmingDelete = $state(false);
+
+    function removeExercise() {
+        router
+            .optimistic((props: { workout: Workout }) => ({
+                workout: {
+                    ...props.workout,
+                    exercises: (props.workout.exercises ?? []).filter(
+                        (candidate) => candidate.id !== exercise.id,
+                    ),
+                },
+            }))
+            .delete(ExerciseController.destroy.url(exercise.id), visit);
+    }
+
     let editing = $state(false);
     let minutes = $state('');
     let seconds = $state('');
@@ -126,13 +144,19 @@
     function save() {
         editing = false;
 
+        const duration = (Number(minutes) || 0) * 60 + (Number(seconds) || 0);
+        const miles = distance === '' ? null : distance;
+
+        if (
+            duration === exercise.duration_seconds &&
+            miles === exercise.distance_miles
+        ) {
+            return;
+        }
+
         router.patch(
             ExerciseController.update.url(exercise.id),
-            {
-                duration_seconds:
-                    (Number(minutes) || 0) * 60 + (Number(seconds) || 0),
-                distance_miles: distance === '' ? null : distance,
-            },
+            { duration_seconds: duration, distance_miles: miles },
             visit,
         );
     }
@@ -148,51 +172,86 @@
     }
 </script>
 
-<article class="rounded-3xl bg-card p-4 shadow-sm">
-    <header class="flex items-start justify-between gap-4 px-2 pb-4">
-        <div class="flex items-center gap-3">
-            <span
-                class="flex size-12 items-center justify-center rounded-2xl bg-foreground text-background"
-            >
-                <Dumbbell class="size-6" />
-            </span>
-            <h2 class="text-lg font-semibold leading-tight">{exercise.name}</h2>
-        </div>
+<article class="border-t border-border py-6">
+    <header class="flex items-start justify-between gap-6 pb-2">
+        <h2 class="text-base font-semibold">{exercise.name}</h2>
 
-        {#if exercise.type === 'strength'}
-            <dl class="flex gap-6 text-right">
-                <div>
-                    <dt class="text-sm text-muted-foreground">Volume</dt>
-                    <dd class="text-xl font-bold tabular-nums">
-                        {totalVolume.toLocaleString()}
-                        <span class="text-sm font-normal text-muted-foreground">lbs</span>
-                    </dd>
-                </div>
-                <div>
-                    <dt class="text-sm text-muted-foreground">Reps</dt>
-                    <dd class="text-xl font-bold tabular-nums">{totalReps}</dd>
-                </div>
-            </dl>
-        {/if}
+        <div class="flex items-start gap-4">
+            {#if exercise.type === 'strength'}
+                <dl class="flex gap-6 text-right">
+                    <div>
+                        <dt
+                            class="font-mono text-xs tracking-widest text-muted-foreground uppercase"
+                        >
+                            Volume
+                        </dt>
+                        <dd
+                            class="font-mono text-base font-semibold tabular-nums"
+                        >
+                            {volumeLabel}
+                        </dd>
+                    </div>
+                    <div>
+                        <dt
+                            class="font-mono text-xs tracking-widest text-muted-foreground uppercase"
+                        >
+                            Reps
+                        </dt>
+                        <dd
+                            class="font-mono text-base font-semibold tabular-nums"
+                        >
+                            {totalReps}
+                        </dd>
+                    </div>
+                </dl>
+            {:else}
+                <span
+                    class="font-mono text-xs tracking-widest text-muted-foreground uppercase"
+                >
+                    Cardio
+                </span>
+            {/if}
+
+            <button
+                type="button"
+                onclick={() => (confirmingDelete = true)}
+                aria-label="Remove exercise"
+                class="text-muted-foreground transition-colors hover:text-destructive"
+            >
+                <X class="size-4" />
+            </button>
+        </div>
     </header>
 
+    <ConfirmDialog
+        bind:open={confirmingDelete}
+        title="Delete {exercise.name}?"
+        description="This removes the exercise and every set logged under it. This cannot be undone."
+        onconfirm={removeExercise}
+    />
+
     {#if exercise.type === 'strength'}
-        <div class="space-y-2 rounded-2xl bg-muted/50 p-2">
+        <div>
             {#each sets as set, index (set.id)}
-                <SetRow {set} {index} onremove={() => removeSet(set.id)} />
+                <SetRow
+                    {set}
+                    {index}
+                    onchange={(patch) => Object.assign(sets[index], patch)}
+                    onremove={() => removeSet(set.id)}
+                />
             {/each}
 
             <button
                 type="button"
                 onclick={addSet}
-                class="flex w-full items-center justify-center gap-1 rounded-2xl border-2 border-dashed border-muted-foreground/30 py-3 text-sm font-medium text-muted-foreground transition-colors hover:border-muted-foreground/50"
+                class="flex items-center gap-2 pt-3 text-sm text-muted-foreground transition-colors hover:text-foreground"
             >
                 <Plus class="size-4" /> Add a set
             </button>
         </div>
     {:else if editing}
         <div
-            class="flex items-center gap-2 px-2 pb-2 text-sm"
+            class="flex items-baseline gap-2 pt-2"
             use:focusFirstInput
             onfocusout={(event) => {
                 if (!event.currentTarget.contains(event.relatedTarget as Node)) {
@@ -200,49 +259,52 @@
                 }
             }}
         >
-            <Timer class="size-4 text-muted-foreground" />
-            <Input
-                type="number"
-                min="0"
+            <input
+                type="text"
+                inputmode="numeric"
                 aria-label="Minutes"
                 bind:value={minutes}
                 onkeydown={handleKeydown}
-                class="h-8 w-16 text-center tabular-nums"
+                class="w-20 border-b border-border bg-transparent pb-1 text-right font-mono text-2xl font-semibold tabular-nums focus:border-primary focus:outline-none"
             />
-            <span class="text-muted-foreground">m</span>
-            <Input
-                type="number"
-                min="0"
-                max="59"
+            <span class="font-mono text-2xl font-semibold text-muted-foreground"
+                >:</span
+            >
+            <input
+                type="text"
+                inputmode="numeric"
                 aria-label="Seconds"
                 bind:value={seconds}
                 onkeydown={handleKeydown}
-                class="h-8 w-16 text-center tabular-nums"
+                class="w-20 border-b border-border bg-transparent pb-1 text-left font-mono text-2xl font-semibold tabular-nums focus:border-primary focus:outline-none"
             />
-            <span class="text-muted-foreground">s</span>
-            <Input
-                type="number"
-                step="0.01"
-                min="0"
-                placeholder="0"
+            <input
+                type="text"
+                inputmode="decimal"
+                placeholder="&mdash;"
                 aria-label="Distance in miles"
                 bind:value={distance}
                 onkeydown={handleKeydown}
-                class="h-8 w-20 text-center tabular-nums"
+                class="ml-6 w-28 border-b border-border bg-transparent pb-1 text-right font-mono text-2xl font-semibold tabular-nums focus:border-primary focus:outline-none"
             />
-            <span class="text-muted-foreground">mi</span>
+            <span class="font-mono text-xs text-muted-foreground">mi</span>
         </div>
     {:else}
         <button
             type="button"
             onclick={startEditing}
-            class="flex w-full items-center gap-2 rounded-2xl px-2 pb-2 text-left text-sm transition-colors hover:text-muted-foreground"
+            class="flex items-baseline gap-6 pt-2 text-left"
         >
-            <Timer class="size-4 text-muted-foreground" />
-            <span>{formatDuration(exercise.duration_seconds)}</span>
+            <span class="font-mono text-2xl font-semibold tabular-nums">
+                {formatDuration(exercise.duration_seconds)}
+            </span>
             {#if exercise.distance_miles}
-                <span class="text-muted-foreground">·</span>
-                <span>{exercise.distance_miles} mi</span>
+                <span class="font-mono text-2xl font-semibold tabular-nums">
+                    {exercise.distance_miles}
+                    <span class="font-mono text-xs text-muted-foreground"
+                        >mi</span
+                    >
+                </span>
             {/if}
         </button>
     {/if}

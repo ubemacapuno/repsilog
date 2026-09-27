@@ -184,8 +184,8 @@
                         </Label>
                         <Input
                             id="minutes"
-                            type="number"
-                            min="0"
+                            type="text"
+                            inputmode="numeric"
                             placeholder="0"
                             bind:value={minutes}
                         />
@@ -199,9 +199,8 @@
                         </Label>
                         <Input
                             id="seconds"
-                            type="number"
-                            min="0"
-                            max="59"
+                            type="text"
+                            inputmode="numeric"
                             placeholder="0"
                             bind:value={seconds}
                         />
@@ -220,9 +219,8 @@
                 <Input
                     id="distance_miles"
                     name="distance_miles"
-                    type="number"
-                    step="0.01"
-                    min="0"
+                    type="text"
+                    inputmode="decimal"
                 />
                 <InputError message={errors.distance_miles} />
             </div>

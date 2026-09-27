@@ -19,3 +19,7 @@ export function formatDuration(totalSeconds: number | null): string {
 
     return parts.filter(Boolean).join(' ');
 }
+
+export function formatWorkoutDate(value: string): string {
+    return format(value, 'EEE MMM d').toUpperCase();
+}

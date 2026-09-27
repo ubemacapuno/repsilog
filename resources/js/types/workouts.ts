@@ -34,3 +34,12 @@ export type SetDraft = {
     weight: string;
     completed: boolean;
 };
+
+export type Paginated<T> = {
+    data: T[];
+    prev_page_url: string | null;
+    next_page_url: string | null;
+    from: number | null;
+    to: number | null;
+    total: number;
+};
