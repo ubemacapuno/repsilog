@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreExerciseRequest;
+use App\Http\Requests\UpdateExerciseRequest;
 use App\Models\Exercise;
 use App\Models\Workout;
 use Illuminate\Http\RedirectResponse;
@@ -17,6 +18,19 @@ class ExerciseController extends Controller
         $workout->exercises()->create($request->validated());
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Exercise added.')]);
+
+        return back();
+    }
+
+    public function update(UpdateExerciseRequest $request, Exercise $exercise): RedirectResponse
+    {
+        $exercise->load('workout');
+
+        $this->authorize('update', $exercise);
+
+        $exercise->update($request->validated());
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Exercise updated.')]);
 
         return back();
     }

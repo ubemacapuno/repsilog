@@ -57,13 +57,61 @@ it('requires a duration for a cardio exercise', function () {
         ->assertInvalid('duration_seconds');
 });
 
+it('edits the duration and distance of a cardio exercise', function () {
+    $user = User::factory()->create();
+    $run = Exercise::factory()
+        ->cardio()
+        ->for(Workout::factory()->for($user))
+        ->create(['duration_seconds' => 600, 'distance_miles' => '1.00']);
+
+    $this->actingAs($user)
+        ->patch(route('exercises.update', $run), [
+            'duration_seconds' => 1530,
+            'distance_miles' => '3.25',
+        ])
+        ->assertRedirect();
+
+    expect($run->refresh())
+        ->duration_seconds->toBe(1530)
+        ->distance_miles->toBe('3.25');
+});
+
+it('rejects a cardio duration of zero', function () {
+    $user = User::factory()->create();
+    $run = Exercise::factory()
+        ->cardio()
+        ->for(Workout::factory()->for($user))
+        ->create();
+
+    $this->actingAs($user)
+        ->patch(route('exercises.update', $run), ['duration_seconds' => 0])
+        ->assertInvalid('duration_seconds');
+});
+
+it('does not let a user edit someone elses exercise', function () {
+    $run = Exercise::factory()
+        ->cardio()
+        ->for(Workout::factory()->for(User::factory()))
+        ->create();
+
+    $this->actingAs(User::factory()->create())
+        ->patch(route('exercises.update', $run), ['duration_seconds' => 60])
+        ->assertForbidden();
+});
+
 it('starts the first set of an exercise empty', function () {
     $user = User::factory()->create();
 
+    $exercise = exerciseOwnedBy($user);
+
     $this->actingAs($user)
-        ->postJson(route('sets.store', exerciseOwnedBy($user)))
-        ->assertCreated()
-        ->assertJson(['reps' => 0, 'weight' => null, 'completed_at' => null]);
+        ->post(route('sets.store', $exercise))
+        ->assertRedirect();
+
+    expect($exercise->sets()->sole())
+        ->reps->toBe(0)
+        ->weight->toBeNull()
+        ->completed_at->toBeNull();
 });
 
 it('copies the previous set values onto a new set', function () {
@@ -73,9 +121,12 @@ it('copies the previous set values onto a new set', function () {
     ExerciseSet::factory()->for($exercise)->create(['reps' => 12, 'weight' => '95.00']);
 
     $this->actingAs($user)
-        ->postJson(route('sets.store', $exercise))
-        ->assertCreated()
-        ->assertJson(['reps' => 12, 'weight' => '95.00']);
+        ->post(route('sets.store', $exercise))
+        ->assertRedirect();
+
+    expect($exercise->sets()->latest('id')->first())
+        ->reps->toBe(12)
+        ->weight->toBe('95.00');
 });
 
 it('saves a set and marks it complete', function () {
@@ -85,12 +136,12 @@ it('saves a set and marks it complete', function () {
         ->create(['reps' => 0, 'completed_at' => null]);
 
     $this->actingAs($user)
-        ->patchJson(route('sets.update', $set), [
+        ->patch(route('sets.update', $set), [
             'reps' => 12,
             'weight' => '95.00',
             'completed_at' => now()->toIso8601String(),
         ])
-        ->assertOk();
+        ->assertRedirect();
 
     expect($set->refresh())
         ->reps->toBe(12)
@@ -104,7 +155,7 @@ it('does not let a user save a set belonging to someone else', function () {
         ->create();
 
     $this->actingAs(User::factory()->create())
-        ->patchJson(route('sets.update', $set), ['reps' => 7])
+        ->patch(route('sets.update', $set), ['reps' => 7])
         ->assertForbidden();
 });
 
@@ -112,7 +163,7 @@ it('does not let a user add a set to someone elses exercise', function () {
     $exercise = exerciseOwnedBy(User::factory()->create());
 
     $this->actingAs(User::factory()->create())
-        ->postJson(route('sets.store', $exercise))
+        ->post(route('sets.store', $exercise))
         ->assertForbidden();
 });
 
