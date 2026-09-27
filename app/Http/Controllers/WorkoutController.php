@@ -19,7 +19,8 @@ class WorkoutController extends Controller
             'workouts' => $request->user()->workouts()
                 ->withCount('exercises')
                 ->latest('performed_at')
-                ->get(),
+                ->paginate(10)
+                ->withQueryString(),
         ]);
     }
 

@@ -5,6 +5,7 @@ use App\Models\Exercise;
 use App\Models\ExerciseSet;
 use App\Models\User;
 use App\Models\Workout;
+use Inertia\Testing\AssertableInertia;
 
 function exerciseOwnedBy(User $user): Exercise
 {
@@ -19,6 +20,17 @@ it('loads the workout index', function () {
     $this->actingAs($user)
         ->get(route('workouts.index'))
         ->assertOk();
+});
+
+it('shows only the latest ten workouts on the first page', function () {
+    $user = User::factory()->hasWorkouts(12)->create();
+
+    $this->actingAs($user)
+        ->get(route('workouts.index'))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->has('workouts.data', 10)
+            ->where('workouts.total', 12)
+        );
 });
 
 it('does not let a user open someone elses workout', function () {
