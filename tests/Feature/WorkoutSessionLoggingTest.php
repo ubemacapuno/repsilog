@@ -4,20 +4,20 @@ use App\Enums\ExerciseType;
 use App\Models\Exercise;
 use App\Models\ExerciseSet;
 use App\Models\User;
-use App\Models\Workout;
-use App\Models\WorkoutExercise;
+use App\Models\WorkoutSession;
+use App\Models\WorkoutSessionExercise;
 use Inertia\Testing\AssertableInertia;
 
-function entryOwnedBy(User $user, ExerciseType $type = ExerciseType::Strength): WorkoutExercise
+function entryOwnedBy(User $user, ExerciseType $type = ExerciseType::Strength): WorkoutSessionExercise
 {
-    return WorkoutExercise::factory()
-        ->for(Workout::factory()->for($user))
+    return WorkoutSessionExercise::factory()
+        ->for(WorkoutSession::factory()->for($user))
         ->for(Exercise::factory()->for($user)->state(['type' => $type]))
         ->create();
 }
 
 it('loads the workout index', function () {
-    $user = User::factory()->hasWorkouts(2)->create();
+    $user = User::factory()->hasWorkoutSessions(2)->create();
 
     $this->actingAs($user)
         ->get(route('workouts.index'))
@@ -25,7 +25,7 @@ it('loads the workout index', function () {
 });
 
 it('shows only the latest ten workouts on the first page', function () {
-    $user = User::factory()->hasWorkouts(12)->create();
+    $user = User::factory()->hasWorkoutSessions(12)->create();
 
     $this->actingAs($user)
         ->get(route('workouts.index'))
@@ -36,25 +36,25 @@ it('shows only the latest ten workouts on the first page', function () {
 });
 
 it('does not let a user open someone elses workout', function () {
-    $workout = Workout::factory()->for(User::factory())->create();
+    $workoutSession = WorkoutSession::factory()->for(User::factory())->create();
 
     $this->actingAs(User::factory()->create())
-        ->get(route('workouts.show', $workout))
+        ->get(route('workouts.show', $workoutSession))
         ->assertForbidden();
 });
 
 it('adds an exercise to a workout without any sets', function () {
     $user = User::factory()->create();
-    $workout = Workout::factory()->for($user)->create();
+    $workoutSession = WorkoutSession::factory()->for($user)->create();
 
     $this->actingAs($user)
-        ->post(route('workout-exercises.store', $workout), [
+        ->post(route('workout-session-exercises.store', $workoutSession), [
             'name' => 'Bench Press',
             'type' => 'strength',
         ])
         ->assertRedirect();
 
-    expect($workout->exercises()->sole())
+    expect($workoutSession->exercises()->sole())
         ->exercise->name->toBe('Bench Press')
         ->sets->toHaveCount(0);
 });
@@ -63,8 +63,8 @@ it('reuses the catalog entry when the same name is added again', function () {
     $user = User::factory()->create();
     $actor = $this->actingAs($user);
 
-    foreach (Workout::factory()->for($user)->count(2)->create() as $workout) {
-        $actor->post(route('workout-exercises.store', $workout), [
+    foreach (WorkoutSession::factory()->for($user)->count(2)->create() as $workoutSession) {
+        $actor->post(route('workout-session-exercises.store', $workoutSession), [
             'name' => 'Bench Press',
             'type' => 'strength',
         ])->assertRedirect();
@@ -72,16 +72,16 @@ it('reuses the catalog entry when the same name is added again', function () {
 
     expect($user->exercises()->sole())
         ->name->toBe('Bench Press')
-        ->workoutExercises->toHaveCount(2);
+        ->workoutSessionExercises->toHaveCount(2);
 });
 
 it('rejects cardio fields when the catalog says the name is a strength move', function () {
     $user = User::factory()->create();
-    $workout = Workout::factory()->for($user)->create();
+    $workoutSession = WorkoutSession::factory()->for($user)->create();
     Exercise::factory()->for($user)->create(['name' => 'Row', 'type' => ExerciseType::Strength]);
 
     $this->actingAs($user)
-        ->post(route('workout-exercises.store', $workout), [
+        ->post(route('workout-session-exercises.store', $workoutSession), [
             'name' => 'Row',
             'type' => 'cardio',
             'duration_seconds' => 600,
@@ -90,46 +90,46 @@ it('rejects cardio fields when the catalog says the name is a strength move', fu
         ->assertInvalid(['duration_seconds', 'distance_miles']);
 
     expect($user->exercises()->sole()->type)->toBe(ExerciseType::Strength)
-        ->and($workout->exercises()->count())->toBe(0);
+        ->and($workoutSession->exercises()->count())->toBe(0);
 });
 
 it('requires a duration when the catalog says the name is cardio', function () {
     $user = User::factory()->create();
-    $workout = Workout::factory()->for($user)->create();
+    $workoutSession = WorkoutSession::factory()->for($user)->create();
     Exercise::factory()->for($user)->cardio()->create(['name' => 'Run']);
 
     $this->actingAs($user)
-        ->post(route('workout-exercises.store', $workout), [
+        ->post(route('workout-session-exercises.store', $workoutSession), [
             'name' => 'Run',
             'type' => 'strength',
         ])
         ->assertInvalid('duration_seconds');
 
-    expect($workout->exercises()->count())->toBe(0);
+    expect($workoutSession->exercises()->count())->toBe(0);
 });
 
 it('never stores cardio fields on a strength entry', function () {
     $user = User::factory()->create();
-    $workout = Workout::factory()->for($user)->create();
+    $workoutSession = WorkoutSession::factory()->for($user)->create();
 
     $this->actingAs($user)
-        ->post(route('workout-exercises.store', $workout), [
+        ->post(route('workout-session-exercises.store', $workoutSession), [
             'name' => 'Bench Press',
             'type' => 'strength',
             'duration_seconds' => 600,
         ])
         ->assertInvalid('duration_seconds');
 
-    expect($workout->exercises()->count())->toBe(0);
+    expect($workoutSession->exercises()->count())->toBe(0);
 });
 
 it('reuses a catalog entry whose name differs only by case', function () {
     $user = User::factory()->create();
-    $workout = Workout::factory()->for($user)->create();
+    $workoutSession = WorkoutSession::factory()->for($user)->create();
     Exercise::factory()->for($user)->create(['name' => 'Bench Press']);
 
     $this->actingAs($user)
-        ->post(route('workout-exercises.store', $workout), [
+        ->post(route('workout-session-exercises.store', $workoutSession), [
             'name' => 'bench press',
             'type' => 'strength',
         ])
@@ -140,11 +140,11 @@ it('reuses a catalog entry whose name differs only by case', function () {
 
 it('does not borrow another users catalog entry', function () {
     $user = User::factory()->create();
-    $workout = Workout::factory()->for($user)->create();
+    $workoutSession = WorkoutSession::factory()->for($user)->create();
     $theirs = Exercise::factory()->for(User::factory())->create(['name' => 'Squat']);
 
     $this->actingAs($user)
-        ->post(route('workout-exercises.store', $workout), [
+        ->post(route('workout-session-exercises.store', $workoutSession), [
             'name' => 'Squat',
             'type' => 'strength',
         ])
@@ -155,10 +155,10 @@ it('does not borrow another users catalog entry', function () {
 
 it('requires a duration for a cardio exercise', function () {
     $user = User::factory()->create();
-    $workout = Workout::factory()->for($user)->create();
+    $workoutSession = WorkoutSession::factory()->for($user)->create();
 
     $this->actingAs($user)
-        ->post(route('workout-exercises.store', $workout), [
+        ->post(route('workout-session-exercises.store', $workoutSession), [
             'name' => 'Run',
             'type' => 'cardio',
         ])
@@ -171,7 +171,7 @@ it('edits the duration and distance of a cardio exercise', function () {
     $run->update(['duration_seconds' => 600, 'distance_miles' => '1.00']);
 
     $this->actingAs($user)
-        ->patch(route('workout-exercises.update', $run), [
+        ->patch(route('workout-session-exercises.update', $run), [
             'duration_seconds' => 1530,
             'distance_miles' => '3.25',
         ])
@@ -187,7 +187,7 @@ it('rejects a cardio duration of zero', function () {
     $run = entryOwnedBy($user, ExerciseType::Cardio);
 
     $this->actingAs($user)
-        ->patch(route('workout-exercises.update', $run), ['duration_seconds' => 0])
+        ->patch(route('workout-session-exercises.update', $run), ['duration_seconds' => 0])
         ->assertInvalid('duration_seconds');
 });
 
@@ -196,7 +196,7 @@ it('rejects a duration sent for a strength exercise', function () {
     $entry = entryOwnedBy($user);
 
     $this->actingAs($user)
-        ->patch(route('workout-exercises.update', $entry), ['duration_seconds' => 600])
+        ->patch(route('workout-session-exercises.update', $entry), ['duration_seconds' => 600])
         ->assertSessionHasErrors('duration_seconds');
 
     expect($entry->refresh()->duration_seconds)->toBeNull();
@@ -206,7 +206,7 @@ it('does not let a user edit someone elses exercise', function () {
     $run = entryOwnedBy(User::factory()->create(), ExerciseType::Cardio);
 
     $this->actingAs(User::factory()->create())
-        ->patch(route('workout-exercises.update', $run), ['duration_seconds' => 60])
+        ->patch(route('workout-session-exercises.update', $run), ['duration_seconds' => 60])
         ->assertForbidden();
 });
 
@@ -279,22 +279,22 @@ it('does not let a user add a set to someone elses exercise', function () {
 
 it('deleting a workout takes its exercises and sets with it', function () {
     $user = User::factory()->create();
-    $workout = Workout::factory()->for($user)
-        ->has(WorkoutExercise::factory()->hasSets(3), 'exercises')
+    $workoutSession = WorkoutSession::factory()->for($user)
+        ->has(WorkoutSessionExercise::factory()->hasSets(3), 'exercises')
         ->create();
 
     $this->actingAs($user)
-        ->delete(route('workouts.destroy', $workout))
+        ->delete(route('workouts.destroy', $workoutSession))
         ->assertRedirect(route('workouts.index'));
 
-    expect(Workout::count())->toBe(0)
-        ->and(WorkoutExercise::count())->toBe(0)
+    expect(WorkoutSession::count())->toBe(0)
+        ->and(WorkoutSessionExercise::count())->toBe(0)
         ->and(ExerciseSet::count())->toBe(0);
 });
 
 it('paginates workouts that share a performed_at without repeating any', function () {
     $user = User::factory()->create();
-    Workout::factory()->for($user)->count(12)->create([
+    WorkoutSession::factory()->for($user)->count(12)->create([
         'performed_at' => now()->setTime(10, 0),
     ]);
 

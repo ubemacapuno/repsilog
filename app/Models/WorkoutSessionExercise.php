@@ -2,19 +2,19 @@
 
 namespace App\Models;
 
-use Database\Factories\WorkoutExerciseFactory;
+use Database\Factories\WorkoutSessionExerciseFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * One exercise as it was performed in one workout. It joins a workout to a
- * catalog exercise, and owns the sets logged against it.
+ * One exercise as it was performed in one session. It joins a workout session
+ * to a catalog exercise, and owns the sets logged against it.
  */
-class WorkoutExercise extends Model
+class WorkoutSessionExercise extends Model
 {
-    /** @use HasFactory<WorkoutExerciseFactory> */
+    /** @use HasFactory<WorkoutSessionExerciseFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -25,11 +25,11 @@ class WorkoutExercise extends Model
     ];
 
     /**
-     * @return BelongsTo<Workout, $this>
+     * @return BelongsTo<WorkoutSession, $this>
      */
-    public function workout(): BelongsTo
+    public function workoutSession(): BelongsTo
     {
-        return $this->belongsTo(Workout::class);
+        return $this->belongsTo(WorkoutSession::class);
     }
 
     /**

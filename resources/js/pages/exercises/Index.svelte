@@ -108,7 +108,7 @@
 
         <tbody>
         {#each exercises.data as exercise (exercise.id)}
-            {@const used = exercise.workout_exercises_count ?? 0}
+            {@const used = exercise.workout_session_exercises_count ?? 0}
 
             <tr class="border-b border-border">
                 <td class="py-2 pr-4">

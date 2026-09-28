@@ -2,22 +2,22 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreWorkoutExerciseRequest;
-use App\Http\Requests\UpdateWorkoutExerciseRequest;
-use App\Models\Workout;
-use App\Models\WorkoutExercise;
+use App\Http\Requests\StoreWorkoutSessionExerciseRequest;
+use App\Http\Requests\UpdateWorkoutSessionExerciseRequest;
+use App\Models\WorkoutSession;
+use App\Models\WorkoutSessionExercise;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 
-class WorkoutExerciseController extends Controller
+class WorkoutSessionExerciseController extends Controller
 {
     /**
      * The name is matched against the user's catalog rather than sent as an id,
      * so typing a movement they have never logged still adds it in one step.
      */
-    public function store(StoreWorkoutExerciseRequest $request, Workout $workout): RedirectResponse
+    public function store(StoreWorkoutSessionExerciseRequest $request, WorkoutSession $workoutSession): RedirectResponse
     {
-        $this->authorize('update', $workout);
+        $this->authorize('update', $workoutSession);
 
         $validated = $request->validated();
 
@@ -26,7 +26,7 @@ class WorkoutExerciseController extends Controller
             ['type' => $validated['type']],
         );
 
-        $workout->exercises()->create([
+        $workoutSession->exercises()->create([
             'exercise_id' => $exercise->id,
             'duration_seconds' => $validated['duration_seconds'] ?? null,
             'distance_miles' => $validated['distance_miles'] ?? null,
@@ -37,26 +37,26 @@ class WorkoutExerciseController extends Controller
         return back();
     }
 
-    public function update(UpdateWorkoutExerciseRequest $request, WorkoutExercise $workoutExercise): RedirectResponse
+    public function update(UpdateWorkoutSessionExerciseRequest $request, WorkoutSessionExercise $workoutSessionExercise): RedirectResponse
     {
-        $workoutExercise->load('workout');
+        $workoutSessionExercise->load('workoutSession');
 
-        $this->authorize('update', $workoutExercise);
+        $this->authorize('update', $workoutSessionExercise);
 
-        $workoutExercise->update($request->validated());
+        $workoutSessionExercise->update($request->validated());
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Exercise updated.')]);
 
         return back();
     }
 
-    public function destroy(WorkoutExercise $workoutExercise): RedirectResponse
+    public function destroy(WorkoutSessionExercise $workoutSessionExercise): RedirectResponse
     {
-        $workoutExercise->load('workout');
+        $workoutSessionExercise->load('workoutSession');
 
-        $this->authorize('delete', $workoutExercise);
+        $this->authorize('delete', $workoutSessionExercise);
 
-        $workoutExercise->delete();
+        $workoutSessionExercise->delete();
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Exercise removed.')]);
 

@@ -1,15 +1,15 @@
 <script lang="ts">
     import {router} from '@inertiajs/svelte';
     import {untrack} from 'svelte';
-    import WorkoutExerciseController from '@/actions/App/Http/Controllers/WorkoutExerciseController';
+    import WorkoutSessionExerciseController from '@/actions/App/Http/Controllers/WorkoutSessionExerciseController';
     import ExerciseSetController from '@/actions/App/Http/Controllers/ExerciseSetController';
     import ConfirmDialog from '@/components/ConfirmDialog.svelte';
     import SetRow from '@/components/workouts/SetRow.svelte';
     import {formatDuration} from '@/lib/datetime';
-    import type {ExerciseSet, SetDraft, Workout, WorkoutExercise} from '@/types';
+    import type {ExerciseSet, SetDraft, WorkoutSession, WorkoutSessionExercise} from '@/types';
     import { Plus, X } from '@lucide/svelte';
 
-    let {exercise}: { exercise: WorkoutExercise } = $props();
+    let {exercise}: { exercise: WorkoutSessionExercise } = $props();
 
     const movement = $derived(exercise.exercise);
 
@@ -77,7 +77,7 @@
         totalVolume === 0 ? 'BW' : totalVolume.toLocaleString(),
     );
 
-    function withSets(props: { workout: Workout }, sets: ExerciseSet[]) {
+    function withSets(props: { workout: WorkoutSession }, sets: ExerciseSet[]) {
         return {
             workout: {
                 ...props.workout,
@@ -90,7 +90,7 @@
         };
     }
 
-    function setsIn(props: { workout: Workout }): ExerciseSet[] {
+    function setsIn(props: { workout: WorkoutSession }): ExerciseSet[] {
         return (
             (props.workout.exercises ?? []).find(
                 (candidate) => candidate.id === exercise.id,
@@ -104,14 +104,14 @@
         const previous = sets[sets.length - 1];
         const pending: ExerciseSet = {
             id: -Date.now(),
-            workout_exercise_id: exercise.id,
+            workout_session_exercise_id: exercise.id,
             reps: Number(previous?.reps) || 0,
             weight: previous?.weight || null,
             completed_at: null,
         };
 
         router
-            .optimistic((props: { workout: Workout }) =>
+            .optimistic((props: { workout: WorkoutSession }) =>
                 withSets(props, [...setsIn(props), pending]),
             )
             .post(ExerciseSetController.store.url(exercise.id), {}, visit);
@@ -123,7 +123,7 @@
         }
 
         router
-            .optimistic((props: { workout: Workout }) =>
+            .optimistic((props: { workout: WorkoutSession }) =>
                 withSets(
                     props,
                     setsIn(props).filter((set) => set.id !== id),
@@ -136,7 +136,7 @@
 
     function removeExercise() {
         router
-            .optimistic((props: { workout: Workout }) => ({
+            .optimistic((props: { workout: WorkoutSession }) => ({
                 workout: {
                     ...props.workout,
                     exercises: (props.workout.exercises ?? []).filter(
@@ -144,7 +144,7 @@
                     ),
                 },
             }))
-            .delete(WorkoutExerciseController.destroy.url(exercise.id), visit);
+            .delete(WorkoutSessionExerciseController.destroy.url(exercise.id), visit);
     }
 
     let editing = $state(false);
@@ -186,7 +186,7 @@
         }
 
         router.patch(
-            WorkoutExerciseController.update.url(exercise.id),
+            WorkoutSessionExerciseController.update.url(exercise.id),
             {duration_seconds: duration, distance_miles: miles},
             visit,
         );

@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('workout_exercises', function (Blueprint $table) {
+        Schema::create('workout_session_exercises', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('workout_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('workout_session_id')->constrained()->cascadeOnDelete();
             $table->foreignId('exercise_id')->constrained()->cascadeOnDelete();
             $table->unsignedInteger('duration_seconds')->nullable();
             $table->decimal('distance_miles', 5, 2)->nullable();
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('workout_exercises');
+        Schema::dropIfExists('workout_session_exercises');
     }
 };

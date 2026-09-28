@@ -43,11 +43,11 @@ class User extends Authenticatable
     }
 
     /**
-     * @return HasMany<Workout, $this>
+     * @return HasMany<WorkoutSession, $this>
      */
-    public function workouts(): HasMany
+    public function workoutSessions(): HasMany
     {
-        return $this->hasMany(Workout::class);
+        return $this->hasMany(WorkoutSession::class);
     }
 
     /**

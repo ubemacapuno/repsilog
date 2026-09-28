@@ -3,7 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\ExerciseSet;
-use App\Models\WorkoutExercise;
+use App\Models\WorkoutSessionExercise;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -19,7 +19,7 @@ class ExerciseSetFactory extends Factory
     public function definition(): array
     {
         return [
-            'workout_exercise_id' => WorkoutExercise::factory(),
+            'workout_session_exercise_id' => WorkoutSessionExercise::factory(),
             'reps' => fake()->numberBetween(5, 12),
             'weight' => fake()->randomFloat(2, 45, 315),
         ];

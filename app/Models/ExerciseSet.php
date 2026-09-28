@@ -19,11 +19,11 @@ class ExerciseSet extends Model
     ];
 
     /**
-     * @return BelongsTo<WorkoutExercise, $this>
+     * @return BelongsTo<WorkoutSessionExercise, $this>
      */
-    public function workoutExercise(): BelongsTo
+    public function workoutSessionExercise(): BelongsTo
     {
-        return $this->belongsTo(WorkoutExercise::class);
+        return $this->belongsTo(WorkoutSessionExercise::class);
     }
 
     /**

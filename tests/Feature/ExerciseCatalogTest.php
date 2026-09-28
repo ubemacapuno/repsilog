@@ -3,8 +3,8 @@
 use App\Enums\ExerciseType;
 use App\Models\Exercise;
 use App\Models\User;
-use App\Models\Workout;
-use App\Models\WorkoutExercise;
+use App\Models\WorkoutSession;
+use App\Models\WorkoutSessionExercise;
 use Inertia\Testing\AssertableInertia;
 
 function catalogEntryFor(User $user, string $name = 'Bench Press'): Exercise
@@ -18,8 +18,8 @@ it('lists only the signed in users exercises with their usage counts', function 
     catalogEntryFor($user, 'Squat');
     catalogEntryFor(User::factory()->create(), 'Deadlift');
 
-    WorkoutExercise::factory()
-        ->for(Workout::factory()->for($user))
+    WorkoutSessionExercise::factory()
+        ->for(WorkoutSession::factory()->for($user))
         ->for($bench)
         ->create();
 
@@ -29,8 +29,8 @@ it('lists only the signed in users exercises with their usage counts', function 
             ->component('exercises/Index')
             ->has('exercises.data', 2)
             ->where('exercises.data.0.name', 'Bench Press')
-            ->where('exercises.data.0.workout_exercises_count', 1)
-            ->where('exercises.data.1.workout_exercises_count', 0)
+            ->where('exercises.data.0.workout_session_exercises_count', 1)
+            ->where('exercises.data.1.workout_session_exercises_count', 0)
         );
 });
 
@@ -52,8 +52,8 @@ it('paginates the catalog at fifteen per page', function () {
 it('renames an exercise everywhere it is used', function () {
     $user = User::factory()->create();
     $exercise = catalogEntryFor($user, 'Bench');
-    $entry = WorkoutExercise::factory()
-        ->for(Workout::factory()->for($user))
+    $entry = WorkoutSessionExercise::factory()
+        ->for(WorkoutSession::factory()->for($user))
         ->for($exercise)
         ->create();
 
@@ -109,8 +109,8 @@ it('refuses to delete an exercise a workout still uses', function () {
     $user = User::factory()->create();
     $exercise = catalogEntryFor($user);
 
-    WorkoutExercise::factory()
-        ->for(Workout::factory()->for($user))
+    WorkoutSessionExercise::factory()
+        ->for(WorkoutSession::factory()->for($user))
         ->for($exercise)
         ->create();
 
@@ -133,12 +133,12 @@ it('rejects a rename that collides only by case', function () {
 
 it('offers the whole catalog when adding an exercise to a workout', function () {
     $user = User::factory()->create();
-    $workout = Workout::factory()->for($user)->create();
+    $workoutSession = WorkoutSession::factory()->for($user)->create();
     catalogEntryFor($user, 'Squat');
     Exercise::factory()->for($user)->cardio()->create(['name' => 'Run']);
 
     $this->actingAs($user)
-        ->get(route('workouts.show', $workout))
+        ->get(route('workouts.show', $workoutSession))
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->has('exercises', 2)
             ->where('exercises.0.name', 'Run')
@@ -148,16 +148,16 @@ it('offers the whole catalog when adding an exercise to a workout', function () 
 
 it('sends each workout entry with its catalog name and sets attached', function () {
     $user = User::factory()->create();
-    $workout = Workout::factory()->for($user)->create();
+    $workoutSession = WorkoutSession::factory()->for($user)->create();
 
-    WorkoutExercise::factory()
-        ->for($workout)
+    WorkoutSessionExercise::factory()
+        ->for($workoutSession)
         ->for(catalogEntryFor($user, 'Bench Press'))
         ->hasSets(2)
         ->create();
 
     $this->actingAs($user)
-        ->get(route('workouts.show', $workout))
+        ->get(route('workouts.show', $workoutSession))
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('workout.exercises.0.exercise.name', 'Bench Press')
             ->where('workout.exercises.0.exercise.type', ExerciseType::Strength->value)

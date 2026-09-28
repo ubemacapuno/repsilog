@@ -8,7 +8,7 @@ use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class StoreWorkoutExerciseRequest extends FormRequest
+class StoreWorkoutSessionExerciseRequest extends FormRequest
 {
     /**
      * Sets are not submitted here. They are added one at a time afterwards.

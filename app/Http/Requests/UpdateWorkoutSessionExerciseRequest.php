@@ -3,11 +3,11 @@
 namespace App\Http\Requests;
 
 use App\Enums\ExerciseType;
-use App\Models\WorkoutExercise;
+use App\Models\WorkoutSessionExercise;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateWorkoutExerciseRequest extends FormRequest
+class UpdateWorkoutSessionExerciseRequest extends FormRequest
 {
     /**
      * Duration and distance belong to cardio only. Sending either for a
@@ -17,10 +17,10 @@ class UpdateWorkoutExerciseRequest extends FormRequest
      */
     public function rules(): array
     {
-        $workoutExercise = $this->route('workoutExercise');
+        $workoutSessionExercise = $this->route('workoutSessionExercise');
 
-        $isCardio = $workoutExercise instanceof WorkoutExercise
-            && $workoutExercise->exercise->type === ExerciseType::Cardio;
+        $isCardio = $workoutSessionExercise instanceof WorkoutSessionExercise
+            && $workoutSessionExercise->exercise->type === ExerciseType::Cardio;
 
         return [
             'duration_seconds' => $isCardio

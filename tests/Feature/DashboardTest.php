@@ -2,8 +2,8 @@
 
 use App\Models\ExerciseSet;
 use App\Models\User;
-use App\Models\Workout;
-use App\Models\WorkoutExercise;
+use App\Models\WorkoutSession;
+use App\Models\WorkoutSessionExercise;
 use Inertia\Testing\AssertableInertia;
 
 test('guests are redirected to the login page', function () {
@@ -21,8 +21,8 @@ test('authenticated users can visit the dashboard', function () {
 
 test('the dashboard counts only the users own completed sets', function () {
     $user = User::factory()->create();
-    $exercise = WorkoutExercise::factory()
-        ->for(Workout::factory()->for($user)->create(['performed_at' => now()]))
+    $exercise = WorkoutSessionExercise::factory()
+        ->for(WorkoutSession::factory()->for($user)->create(['performed_at' => now()]))
         ->create();
 
     ExerciseSet::factory()->for($exercise)->create([
@@ -44,18 +44,18 @@ test('the dashboard counts only the users own completed sets', function () {
             ->where('stats.workoutsThisWeek', 1)
             ->where('stats.setsCompleted', 1)
             ->where('stats.volumeLast7Days', 1000)
-            ->has('recentWorkouts', 1)
+            ->has('recentWorkoutSessions', 1)
         );
 });
 
 test('volume covers only the last seven days, while set counts stay lifetime', function () {
     $user = User::factory()->create();
 
-    $recent = WorkoutExercise::factory()
-        ->for(Workout::factory()->for($user)->create(['performed_at' => now()->subDays(2)]))
+    $recent = WorkoutSessionExercise::factory()
+        ->for(WorkoutSession::factory()->for($user)->create(['performed_at' => now()->subDays(2)]))
         ->create();
-    $old = WorkoutExercise::factory()
-        ->for(Workout::factory()->for($user)->create(['performed_at' => now()->subDays(8)]))
+    $old = WorkoutSessionExercise::factory()
+        ->for(WorkoutSession::factory()->for($user)->create(['performed_at' => now()->subDays(8)]))
         ->create();
 
     ExerciseSet::factory()->for($recent)->create([
@@ -79,8 +79,8 @@ test('volume covers only the last seven days, while set counts stay lifetime', f
 
 test('a future dated workout is not counted in this week', function () {
     $user = User::factory()->create();
-    Workout::factory()->for($user)->create(['performed_at' => now()]);
-    Workout::factory()->for($user)->create(['performed_at' => now()->addWeeks(2)]);
+    WorkoutSession::factory()->for($user)->create(['performed_at' => now()]);
+    WorkoutSession::factory()->for($user)->create(['performed_at' => now()->addWeeks(2)]);
 
     $this->actingAs($user)
         ->get(route('dashboard'))
@@ -92,8 +92,8 @@ test('a future dated workout is not counted in this week', function () {
 
 test('fractional plate weight rounds rather than truncates', function () {
     $user = User::factory()->create();
-    $exercise = WorkoutExercise::factory()
-        ->for(Workout::factory()->for($user)->create(['performed_at' => now()]))
+    $exercise = WorkoutSessionExercise::factory()
+        ->for(WorkoutSession::factory()->for($user)->create(['performed_at' => now()]))
         ->create();
 
     ExerciseSet::factory()->for($exercise)->create([

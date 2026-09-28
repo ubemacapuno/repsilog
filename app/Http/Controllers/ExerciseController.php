@@ -15,7 +15,7 @@ class ExerciseController extends Controller
     {
         return Inertia::render('exercises/Index', [
             'exercises' => $request->user()->exercises()
-                ->withCount('workoutExercises')
+                ->withCount('workoutSessionExercises')
                 ->orderBy('name')
                 ->paginate(15)
                 ->withQueryString(),

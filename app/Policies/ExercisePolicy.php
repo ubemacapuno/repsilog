@@ -19,6 +19,6 @@ class ExercisePolicy
     public function delete(User $user, Exercise $exercise): bool
     {
         return $user->id === $exercise->user_id
-            && $exercise->workoutExercises()->doesntExist();
+            && $exercise->workoutSessionExercises()->doesntExist();
     }
 }

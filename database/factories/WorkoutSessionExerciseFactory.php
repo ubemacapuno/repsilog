@@ -3,14 +3,14 @@
 namespace Database\Factories;
 
 use App\Models\Exercise;
-use App\Models\Workout;
-use App\Models\WorkoutExercise;
+use App\Models\WorkoutSession;
+use App\Models\WorkoutSessionExercise;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<WorkoutExercise>
+ * @extends Factory<WorkoutSessionExercise>
  */
-class WorkoutExerciseFactory extends Factory
+class WorkoutSessionExerciseFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -20,7 +20,7 @@ class WorkoutExerciseFactory extends Factory
     public function definition(): array
     {
         return [
-            'workout_id' => Workout::factory(),
+            'workout_session_id' => WorkoutSession::factory(),
             'exercise_id' => Exercise::factory(),
             'duration_seconds' => null,
             'distance_miles' => null,

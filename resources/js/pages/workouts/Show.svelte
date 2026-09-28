@@ -1,7 +1,7 @@
 <script lang="ts">
     import {router, setLayoutProps} from '@inertiajs/svelte';
     import Trash2 from '@lucide/svelte/icons/trash-2';
-    import WorkoutController from '@/actions/App/Http/Controllers/WorkoutController';
+    import WorkoutSessionController from '@/actions/App/Http/Controllers/WorkoutSessionController';
     import AppHead from '@/components/AppHead.svelte';
     import ConfirmDialog from '@/components/ConfirmDialog.svelte';
     import {Button} from '@/components/ui/button';
@@ -9,13 +9,13 @@
     import ExerciseCard from '@/components/workouts/ExerciseCard.svelte';
     import {formatWorkoutDate, fromDateTimeLocal, toDateTimeLocal,} from '@/lib/datetime';
     import {index, show} from '@/routes/workouts';
-    import type {Exercise, Workout} from '@/types';
+    import type {Exercise, WorkoutSession} from '@/types';
 
     let {
         workout,
         exercises,
     }: {
-        workout: Workout;
+        workout: WorkoutSession;
         exercises: Exercise[];
     } = $props();
 
@@ -60,7 +60,7 @@
         }
 
         router.patch(
-            WorkoutController.update.url(workout.id),
+            WorkoutSessionController.update.url(workout.id),
             {title: nextTitle, performed_at: fromDateTimeLocal(nextDate)},
             {preserveScroll: true, preserveState: true},
         );
@@ -154,7 +154,7 @@
         description="This removes the workout along with every exercise and set it holds. This cannot be undone."
         confirmLabel="Delete workout"
         onconfirm={() =>
-            router.delete(WorkoutController.destroy.url(workout.id))}
+            router.delete(WorkoutSessionController.destroy.url(workout.id))}
     />
 
     <div>

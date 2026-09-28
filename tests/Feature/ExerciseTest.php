@@ -4,8 +4,8 @@ use App\Enums\ExerciseType;
 use App\Models\Exercise;
 use App\Models\ExerciseSet;
 use App\Models\User;
-use App\Models\Workout;
-use App\Models\WorkoutExercise;
+use App\Models\WorkoutSession;
+use App\Models\WorkoutSessionExercise;
 use Illuminate\Database\UniqueConstraintViolationException;
 
 it('casts type to the ExerciseType enum', function () {
@@ -18,10 +18,10 @@ it('is reused by every workout that includes it', function () {
     $user = User::factory()->create();
     $bench = Exercise::factory()->for($user)->create(['name' => 'Bench Press']);
 
-    Workout::factory()->for($user)->count(3)->create()
-        ->each(fn (Workout $workout) => $workout->exercises()->create(['exercise_id' => $bench->id]));
+    WorkoutSession::factory()->for($user)->count(3)->create()
+        ->each(fn (WorkoutSession $workoutSession) => $workoutSession->exercises()->create(['exercise_id' => $bench->id]));
 
-    expect($bench->workoutExercises)->toHaveCount(3)
+    expect($bench->workoutSessionExercises)->toHaveCount(3)
         ->and(Exercise::where('name', 'Bench Press')->count())->toBe(1);
 });
 
@@ -41,7 +41,7 @@ it('lets two users each keep their own copy of a name', function () {
 });
 
 it('records a cardio exercise with duration and distance on the workout entry', function () {
-    $run = WorkoutExercise::factory()->cardio()->create();
+    $run = WorkoutSessionExercise::factory()->cardio()->create();
 
     expect($run->exercise->type)->toBe(ExerciseType::Cardio)
         ->and($run->duration_seconds)->toBeGreaterThan(0)
@@ -49,7 +49,7 @@ it('records a cardio exercise with duration and distance on the workout entry', 
 });
 
 it('has many sets each with its own reps', function () {
-    $entry = WorkoutExercise::factory()->hasSets(3)->create();
+    $entry = WorkoutSessionExercise::factory()->hasSets(3)->create();
 
     expect($entry->sets)->toHaveCount(3)
         ->and($entry->sets->first())->toBeInstanceOf(ExerciseSet::class);
@@ -62,7 +62,7 @@ it('allows a bodyweight set with no weight', function () {
 });
 
 it('sums reps across sets', function () {
-    $entry = WorkoutExercise::factory()->create();
+    $entry = WorkoutSessionExercise::factory()->create();
     $entry->sets()->createMany([
         ['reps' => 10], ['reps' => 8], ['reps' => 6],
     ]);

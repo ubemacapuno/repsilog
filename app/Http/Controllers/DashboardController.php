@@ -18,8 +18,8 @@ class DashboardController extends Controller
 
         return Inertia::render('Dashboard', [
             'stats' => [
-                'workouts' => $user->workouts()->count(),
-                'workoutsThisWeek' => $user->workouts()
+                'workouts' => $user->workoutSessions()->count(),
+                'workoutsThisWeek' => $user->workoutSessions()
                     ->whereBetween('performed_at', [now()->startOfWeek(), now()->endOfWeek()])
                     ->count(),
                 // TODO: two queries run here. completedSets() is rebuilt for the
@@ -30,7 +30,7 @@ class DashboardController extends Controller
                     now()->subDays(7),
                 )->sum(DB::raw('reps * COALESCE(weight, 0)'))),
             ],
-            'recentWorkouts' => $user->workouts()
+            'recentWorkoutSessions' => $user->workoutSessions()
                 ->withCount('exercises')
                 ->latest('performed_at')
                 ->latest('id')
@@ -46,7 +46,7 @@ class DashboardController extends Controller
     {
         return ExerciseSet::query()
             ->whereNotNull('completed_at')
-            ->whereHas('workoutExercise.workout', function (Builder $query) use ($userId, $since): void {
+            ->whereHas('workoutSessionExercise.workoutSession', function (Builder $query) use ($userId, $since): void {
                 $query->where('user_id', $userId)
                     ->when($since, fn (Builder $query) => $query->where('performed_at', '>=', $since));
             });

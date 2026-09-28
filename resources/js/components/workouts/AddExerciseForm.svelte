@@ -1,6 +1,6 @@
 <script lang="ts">
     import {Form} from '@inertiajs/svelte';
-    import WorkoutExerciseController from '@/actions/App/Http/Controllers/WorkoutExerciseController';
+    import WorkoutSessionExerciseController from '@/actions/App/Http/Controllers/WorkoutSessionExerciseController';
     import InputError from '@/components/InputError.svelte';
     import {Button} from '@/components/ui/button';
     import {Input} from '@/components/ui/input';
@@ -103,7 +103,7 @@
 </script>
 
 <Form
-    {...WorkoutExerciseController.store.form(workoutId)}
+    {...WorkoutSessionExerciseController.store.form(workoutId)}
     class="grid gap-4"
     resetOnSuccess
     options={{ preserveScroll: true }}

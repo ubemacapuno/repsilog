@@ -1,13 +1,13 @@
 <?php
 
 use App\Models\ExerciseSet;
-use App\Models\WorkoutExercise;
+use App\Models\WorkoutSessionExercise;
 
 it('belongs to the workout entry it was logged under', function () {
-    $entry = WorkoutExercise::factory()->create();
+    $entry = WorkoutSessionExercise::factory()->create();
     $set = ExerciseSet::factory()->for($entry)->create();
 
-    expect($set->workoutExercise->id)->toBe($entry->id);
+    expect($set->workoutSessionExercise->id)->toBe($entry->id);
 });
 
 it('casts reps sent as a string to an integer', function () {
@@ -29,13 +29,13 @@ it('rounds a weight carrying more precision than two decimal places', function (
 });
 
 it('does not allow the parent workout entry to be mass assigned', function () {
-    $mine = WorkoutExercise::factory()->create();
-    $theirs = WorkoutExercise::factory()->create();
+    $mine = WorkoutSessionExercise::factory()->create();
+    $theirs = WorkoutSessionExercise::factory()->create();
 
     $set = $mine->sets()->create([
         'reps' => 8,
-        'workout_exercise_id' => $theirs->id,
+        'workout_session_exercise_id' => $theirs->id,
     ]);
 
-    expect($set->workout_exercise_id)->toBe($mine->id);
+    expect($set->workout_session_exercise_id)->toBe($mine->id);
 });

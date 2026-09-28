@@ -3,13 +3,13 @@
 namespace Database\Factories;
 
 use App\Models\User;
-use App\Models\Workout;
+use App\Models\WorkoutSession;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<Workout>
+ * @extends Factory<WorkoutSession>
  */
-class WorkoutFactory extends Factory
+class WorkoutSessionFactory extends Factory
 {
     /**
      * Define the model's default state.
