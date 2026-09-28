@@ -1,5 +1,5 @@
 <script module lang="ts">
-    import { index } from '@/routes/exercises';
+    import {index} from '@/routes/exercises';
 
     export const layout = {
         breadcrumbs: [
@@ -12,15 +12,15 @@
 </script>
 
 <script lang="ts">
-    import { Link, router } from '@inertiajs/svelte';
+    import {Link, router} from '@inertiajs/svelte';
     import Trash2 from '@lucide/svelte/icons/trash-2';
     import ExerciseController from '@/actions/App/Http/Controllers/ExerciseController';
     import AppHead from '@/components/AppHead.svelte';
     import ConfirmDialog from '@/components/ConfirmDialog.svelte';
-    import { Button } from '@/components/ui/button';
-    import type { Exercise, Paginated } from '@/types';
+    import {Button} from '@/components/ui/button';
+    import type {Exercise, Paginated} from '@/types';
 
-    let { exercises }: { exercises: Paginated<Exercise> } = $props();
+    let {exercises}: { exercises: Paginated<Exercise> } = $props();
 
     let editingId = $state<number | null>(null);
     let name = $state('');
@@ -52,8 +52,8 @@
 
         router.patch(
             ExerciseController.update.url(exercise.id),
-            { name: trimmed },
-            { preserveScroll: true, preserveState: true },
+            {name: trimmed},
+            {preserveScroll: true, preserveState: true},
         );
     }
 
@@ -83,7 +83,7 @@
     }
 </script>
 
-<AppHead title="Exercises" />
+<AppHead title="Exercises"/>
 
 <div class="mx-auto flex w-full max-w-2xl flex-col gap-4 p-4">
     <div>
@@ -96,80 +96,81 @@
 
     <table class="w-full text-sm">
         <thead>
-            <tr
-                class="border-b border-border font-mono text-xs tracking-widest text-muted-foreground uppercase"
-            >
-                <th class="py-2 text-left font-normal">Name</th>
-                <th class="py-2 text-left font-normal">Type</th>
-                <th class="py-2 text-right font-normal">Workouts</th>
-                <th class="w-10"></th>
-            </tr>
+        <tr
+            class="border-b border-border font-mono text-xs tracking-widest text-muted-foreground uppercase"
+        >
+            <th class="py-2 text-left font-normal">Name</th>
+            <th class="py-2 text-left font-normal">Type</th>
+            <th class="py-2 text-right font-normal">Workouts</th>
+            <th class="w-10"></th>
+        </tr>
         </thead>
 
         <tbody>
-            {#each exercises.data as exercise (exercise.id)}
-                {@const used = exercise.workout_exercises_count ?? 0}
+        {#each exercises.data as exercise (exercise.id)}
+            {@const used = exercise.workout_exercises_count ?? 0}
 
-                <tr class="border-b border-border">
-                    <td class="py-2 pr-4">
-                        {#if editingId === exercise.id}
-                            <input
-                                bind:value={name}
-                                use:focusInput
-                                onblur={() => save(exercise)}
-                                onkeydown={(event) =>
+            <tr class="border-b border-border">
+                <td class="py-2 pr-4">
+                    {#if editingId === exercise.id}
+                        <input
+                            bind:value={name}
+                            use:focusInput
+                            onblur={() => save(exercise)}
+                            onkeydown={(event) =>
                                     handleKeydown(event, exercise)}
-                                aria-label="Exercise name"
-                                class="w-full border-b border-border bg-transparent pb-1 font-semibold focus:border-primary focus:outline-none"
-                            />
-                        {:else}
-                            <button
-                                type="button"
-                                onclick={() => startEditing(exercise)}
-                                class="max-w-full truncate text-left font-semibold"
-                            >
-                                {exercise.name}
-                            </button>
-                        {/if}
-                    </td>
+                            aria-label="Exercise name"
+                            class="w-full border-b border-border bg-transparent pb-1 font-semibold focus:border-primary focus:outline-none"
+                        />
+                    {:else}
+                        <button
+                            type="button"
+                            onclick={() => startEditing(exercise)}
+                            class="max-w-full truncate text-left font-semibold"
+                        >
+                            {exercise.name}
+                        </button>
+                    {/if}
+                </td>
 
-                    <td class="py-2 pr-4">
+                <td class="py-2 pr-4">
                         <span
                             class="font-mono text-xs tracking-widest text-muted-foreground uppercase"
                         >
                             {exercise.type}
                         </span>
-                    </td>
+                </td>
 
-                    <td
-                        class="py-2 pr-4 text-right font-mono tabular-nums text-muted-foreground"
-                    >
-                        {used}
-                    </td>
+                <td
+                    class="py-2 pr-4 text-right font-mono tabular-nums text-muted-foreground"
+                >
+                    {used}
+                </td>
 
-                    <td class="py-2 text-right">
+                <td class="py-2 text-right">
+                    {#if used <= 0}
                         <button
                             type="button"
                             onclick={() => askDelete(exercise)}
-                            disabled={used > 0}
                             aria-label="Delete {exercise.name}"
                             title={used > 0
                                 ? 'Used in a workout, so it cannot be deleted'
                                 : 'Delete'}
                             class="text-muted-foreground transition-colors hover:text-destructive disabled:pointer-events-none disabled:opacity-40"
                         >
-                            <Trash2 class="size-4" />
+                            <Trash2 class="size-4"/>
                         </button>
-                    </td>
-                </tr>
-            {:else}
-                <tr>
-                    <td colspan="4" class="py-6 text-muted-foreground">
-                        No exercises yet. They appear here once you add one to a
-                        workout.
-                    </td>
-                </tr>
-            {/each}
+                    {/if}
+                </td>
+            </tr>
+        {:else}
+            <tr>
+                <td colspan="4" class="py-6 text-muted-foreground">
+                    No exercises yet. They appear here once you add one to a
+                    workout.
+                </td>
+            </tr>
+        {/each}
         </tbody>
     </table>
 
