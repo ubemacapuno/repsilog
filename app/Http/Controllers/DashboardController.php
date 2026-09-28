@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ExerciseSet;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -22,9 +23,9 @@ class DashboardController extends Controller
                     ->where('performed_at', '>=', now()->startOfWeek())
                     ->count(),
                 // TODO: two queries run here. completedSets() is rebuilt for the
-                // count and again for the sum. Look into collapsing them into one.
+                // lifetime count and again for the 7-day sum. Look into collapsing them.
                 'setsCompleted' => $this->completedSets($user->id)->count(),
-                'totalVolume' => (int) $this->completedSets($user->id)
+                'volumeLast7Days' => (int) $this->completedSets($user->id, now()->subDays(7))
                     ->sum(DB::raw('reps * COALESCE(weight, 0)')),
             ],
             'recentWorkouts' => $user->workouts()
@@ -38,12 +39,13 @@ class DashboardController extends Controller
     /**
      * @return Builder<ExerciseSet>
      */
-    private function completedSets(int $userId): Builder
+    private function completedSets(int $userId, ?CarbonInterface $since = null): Builder
     {
         return ExerciseSet::query()
             ->whereNotNull('completed_at')
-            ->whereHas('exercise.workout', function (Builder $query) use ($userId): void {
-                $query->where('user_id', $userId);
+            ->whereHas('exercise.workout', function (Builder $query) use ($userId, $since): void {
+                $query->where('user_id', $userId)
+                    ->when($since, fn (Builder $query) => $query->where('performed_at', '>=', $since));
             });
     }
 }

@@ -26,16 +26,20 @@
             workouts: number;
             workoutsThisWeek: number;
             setsCompleted: number;
-            totalVolume: number;
+            volumeLast7Days: number;
         };
         recentWorkouts: Workout[];
     } = $props();
 
-    const tiles = $derived([
+    const tiles: { label: string; value: string; unit?: string }[] = $derived([
         { label: 'Workouts', value: stats.workouts.toLocaleString() },
         { label: 'This week', value: stats.workoutsThisWeek.toLocaleString() },
         { label: 'Sets done', value: stats.setsCompleted.toLocaleString() },
-        { label: 'Volume', value: stats.totalVolume.toLocaleString() },
+        {
+            label: 'Volume (7d)',
+            value: stats.volumeLast7Days.toLocaleString(),
+            unit: 'lbs',
+        },
     ]);
 </script>
 
@@ -51,7 +55,10 @@
                     {tile.label}
                 </p>
                 <p class="pt-1 font-mono text-2xl font-semibold tabular-nums">
-                    {tile.value}
+                    {tile.value}{#if tile.unit}<span
+                            class="pl-1 text-sm font-normal text-muted-foreground"
+                            >{tile.unit}</span
+                        >{/if}
                 </p>
             </div>
         {/each}

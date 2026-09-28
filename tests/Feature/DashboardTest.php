@@ -43,7 +43,36 @@ test('the dashboard counts only the users own completed sets', function () {
             ->where('stats.workouts', 1)
             ->where('stats.workoutsThisWeek', 1)
             ->where('stats.setsCompleted', 1)
-            ->where('stats.totalVolume', 1000)
+            ->where('stats.volumeLast7Days', 1000)
             ->has('recentWorkouts', 1)
+        );
+});
+
+test('volume covers only the last seven days, while set counts stay lifetime', function () {
+    $user = User::factory()->create();
+
+    $recent = Exercise::factory()
+        ->for(Workout::factory()->for($user)->create(['performed_at' => now()->subDays(2)]))
+        ->create();
+    $old = Exercise::factory()
+        ->for(Workout::factory()->for($user)->create(['performed_at' => now()->subDays(8)]))
+        ->create();
+
+    ExerciseSet::factory()->for($recent)->create([
+        'reps' => 10,
+        'weight' => '100.00',
+        'completed_at' => now(),
+    ]);
+    ExerciseSet::factory()->for($old)->create([
+        'reps' => 10,
+        'weight' => '200.00',
+        'completed_at' => now()->subDays(8),
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('dashboard'))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('stats.setsCompleted', 2)
+            ->where('stats.volumeLast7Days', 1000)
         );
 });
