@@ -1,11 +1,11 @@
 <script lang="ts">
-    import { Form } from '@inertiajs/svelte';
+    import {Form} from '@inertiajs/svelte';
     import ExerciseController from '@/actions/App/Http/Controllers/ExerciseController';
     import InputError from '@/components/InputError.svelte';
-    import { Button } from '@/components/ui/button';
-    import { Input } from '@/components/ui/input';
-    import { Label } from '@/components/ui/label';
-    import type { ExerciseType } from '@/types';
+    import {Button} from '@/components/ui/button';
+    import {Input} from '@/components/ui/input';
+    import {Label} from '@/components/ui/label';
+    import type {ExerciseType} from '@/types';
 
     type Suggestion = { name: string; type: ExerciseType };
 
@@ -51,6 +51,7 @@
         name = suggestion.name;
         chosenType = suggestion.type;
         open = false;
+        highlighted = 0;
     }
 
     function reset() {
@@ -91,8 +92,14 @@
         }
 
         if (event.key === 'Enter') {
+            const suggestion = suggestions[highlighted];
+
+            if (suggestion === undefined) {
+                return;
+            }
+
             event.preventDefault();
-            choose(suggestions[highlighted]);
+            choose(suggestion);
         }
     }
 </script>
@@ -104,7 +111,7 @@
     options={{ preserveScroll: true }}
     onSuccess={reset}
 >
-    {#snippet children({ errors, processing })}
+    {#snippet children({errors, processing})}
         <div class="grid gap-2">
             <Label for="name">Exercise</Label>
 
@@ -113,7 +120,10 @@
                     id="name"
                     name="name"
                     bind:value={name}
-                    onfocus={() => (open = true)}
+                    onfocus={() => {
+                        open = true;
+                        highlighted = 0;
+                    }}
                     onblur={() => (open = false)}
                     oninput={() => {
                         open = true;
@@ -150,7 +160,7 @@
                 {/if}
             </div>
 
-            <InputError message={errors.name} />
+            <InputError message={errors.name}/>
         </div>
 
         {#if isNew}
@@ -165,10 +175,10 @@
                     <option value="strength">Strength</option>
                     <option value="cardio">Cardio</option>
                 </select>
-                <InputError message={errors.type} />
+                <InputError message={errors.type}/>
             </div>
         {:else}
-            <input type="hidden" name="type" value={type} />
+            <input type="hidden" name="type" value={type}/>
         {/if}
 
         {#if type === 'cardio'}
@@ -211,7 +221,7 @@
                     name="duration_seconds"
                     value={durationSeconds}
                 />
-                <InputError message={errors.duration_seconds} />
+                <InputError message={errors.duration_seconds}/>
             </div>
 
             <div class="grid gap-2">
@@ -222,7 +232,7 @@
                     type="text"
                     inputmode="decimal"
                 />
-                <InputError message={errors.distance_miles} />
+                <InputError message={errors.distance_miles}/>
             </div>
         {/if}
 

@@ -9,6 +9,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property ExerciseType $type
+ */
 class Exercise extends Model
 {
     /** @use HasFactory<ExerciseFactory> */

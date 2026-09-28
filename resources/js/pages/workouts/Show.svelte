@@ -1,15 +1,15 @@
 <script lang="ts">
-    import { router, setLayoutProps } from '@inertiajs/svelte';
+    import {router, setLayoutProps} from '@inertiajs/svelte';
     import Trash2 from '@lucide/svelte/icons/trash-2';
     import WorkoutController from '@/actions/App/Http/Controllers/WorkoutController';
     import AppHead from '@/components/AppHead.svelte';
     import ConfirmDialog from '@/components/ConfirmDialog.svelte';
-    import { Button } from '@/components/ui/button';
+    import {Button} from '@/components/ui/button';
     import AddExerciseForm from '@/components/workouts/AddExerciseForm.svelte';
     import ExerciseCard from '@/components/workouts/ExerciseCard.svelte';
-    import { formatWorkoutDate, toDateTimeLocal } from '@/lib/datetime';
-    import { index, show } from '@/routes/workouts';
-    import type { ExerciseType, Workout } from '@/types';
+    import {formatWorkoutDate, fromDateTimeLocal, toDateTimeLocal,} from '@/lib/datetime';
+    import {index, show} from '@/routes/workouts';
+    import type {ExerciseType, Workout} from '@/types';
 
     let {
         workout,
@@ -61,8 +61,8 @@
 
         router.patch(
             WorkoutController.update.url(workout.id),
-            { title: nextTitle, performed_at: nextDate },
-            { preserveScroll: true, preserveState: true },
+            {title: nextTitle, performed_at: fromDateTimeLocal(nextDate)},
+            {preserveScroll: true, preserveState: true},
         );
     }
 
@@ -82,16 +82,16 @@
     }
 
     const breadcrumbs = $derived([
-        { title: 'Workouts', href: index() },
-        { title: workout.title ?? 'Workout', href: show(workout.id) },
+        {title: 'Workouts', href: index()},
+        {title: workout.title ?? 'Workout', href: show(workout.id)},
     ]);
 
     $effect(() => {
-        setLayoutProps({ breadcrumbs });
+        setLayoutProps({breadcrumbs});
     });
 </script>
 
-<AppHead title={workout.title ?? 'Workout'} />
+<AppHead title={workout.title ?? 'Workout'}/>
 
 <div class="mx-auto flex w-full max-w-2xl flex-col gap-6 p-4">
     <header class="flex items-start justify-between gap-4">
@@ -143,7 +143,8 @@
             onclick={() => (confirmingDelete = true)}
             class="text-muted-foreground hover:text-destructive"
         >
-            <Trash2 class="size-4" /> Delete
+            <Trash2 class="size-4"/>
+            Delete
         </Button>
     </header>
 
@@ -158,7 +159,7 @@
 
     <div>
         {#each workout.exercises ?? [] as exercise (exercise.id)}
-            <ExerciseCard {exercise} />
+            <ExerciseCard {exercise}/>
         {:else}
             <p class="border-t border-border py-6 text-sm text-muted-foreground">
                 No exercises yet. Add the first one below.
@@ -173,6 +174,6 @@
             Add an exercise
         </h2>
 
-        <AddExerciseForm workoutId={workout.id} {recentExercises} />
+        <AddExerciseForm workoutId={workout.id} {recentExercises}/>
     </div>
 </div>

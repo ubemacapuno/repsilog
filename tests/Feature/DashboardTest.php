@@ -76,3 +76,35 @@ test('volume covers only the last seven days, while set counts stay lifetime', f
             ->where('stats.volumeLast7Days', 1000)
         );
 });
+
+test('a future dated workout is not counted in this week', function () {
+    $user = User::factory()->create();
+    Workout::factory()->for($user)->create(['performed_at' => now()]);
+    Workout::factory()->for($user)->create(['performed_at' => now()->addWeeks(2)]);
+
+    $this->actingAs($user)
+        ->get(route('dashboard'))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('stats.workouts', 2)
+            ->where('stats.workoutsThisWeek', 1)
+        );
+});
+
+test('fractional plate weight rounds rather than truncates', function () {
+    $user = User::factory()->create();
+    $exercise = Exercise::factory()
+        ->for(Workout::factory()->for($user)->create(['performed_at' => now()]))
+        ->create();
+
+    ExerciseSet::factory()->for($exercise)->create([
+        'reps' => 3,
+        'weight' => '2.50',
+        'completed_at' => now(),
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('dashboard'))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('stats.volumeLast7Days', 8)
+        );
+});

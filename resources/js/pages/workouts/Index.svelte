@@ -1,5 +1,5 @@
 <script module lang="ts">
-    import { index } from '@/routes/workouts';
+    import {index} from '@/routes/workouts';
 
     export const layout = {
         breadcrumbs: [
@@ -12,30 +12,35 @@
 </script>
 
 <script lang="ts">
-    import { Form, Link } from '@inertiajs/svelte';
+    import {Form, Link} from '@inertiajs/svelte';
     import Plus from '@lucide/svelte/icons/plus';
     import WorkoutController from '@/actions/App/Http/Controllers/WorkoutController';
     import AppHead from '@/components/AppHead.svelte';
     import InputError from '@/components/InputError.svelte';
-    import { Button } from '@/components/ui/button';
+    import {Button} from '@/components/ui/button';
     import {
         Dialog,
         DialogContent,
         DialogTitle,
         DialogTrigger,
     } from '@/components/ui/dialog';
-    import { Input } from '@/components/ui/input';
-    import { Label } from '@/components/ui/label';
-    import { formatWorkoutDate, toDateTimeLocal } from '@/lib/datetime';
-    import { show } from '@/routes/workouts';
-    import type { Paginated, Workout } from '@/types';
+    import {Input} from '@/components/ui/input';
+    import {Label} from '@/components/ui/label';
+    import {
+        formatWorkoutDate,
+        fromDateTimeLocal,
+        toDateTimeLocal,
+    } from '@/lib/datetime';
+    import {show} from '@/routes/workouts';
+    import type {Paginated, Workout} from '@/types';
 
-    let { workouts }: { workouts: Paginated<Workout> } = $props();
+    let {workouts}: { workouts: Paginated<Workout> } = $props();
 
     let open = $state(false);
+    let performedAt = $state(toDateTimeLocal());
 </script>
 
-<AppHead title="Workouts" />
+<AppHead title="Workouts"/>
 
 <div class="mx-auto flex w-full max-w-2xl flex-col gap-4 p-4">
     <div class="flex items-center justify-between">
@@ -45,7 +50,8 @@
             <DialogTrigger asChild>
                 {#snippet children(props)}
                     <Button {...props} variant="outline" class="text-primary">
-                        <Plus class="size-4" /> New workout
+                        <Plus class="size-4"/>
+                        New workout
                     </Button>
                 {/snippet}
             </DialogTrigger>
@@ -58,7 +64,7 @@
                     class="grid gap-4"
                     onSuccess={() => (open = false)}
                 >
-                    {#snippet children({ errors, processing })}
+                    {#snippet children({errors, processing})}
                         <div class="grid gap-2">
                             <Label for="title">Title</Label>
                             <Input
@@ -66,19 +72,23 @@
                                 name="title"
                                 placeholder="Push day"
                             />
-                            <InputError message={errors.title} />
+                            <InputError message={errors.title}/>
                         </div>
 
                         <div class="grid gap-2">
                             <Label for="performed_at">Performed at</Label>
                             <Input
                                 id="performed_at"
-                                name="performed_at"
                                 type="datetime-local"
-                                value={toDateTimeLocal()}
+                                bind:value={performedAt}
                                 required
                             />
-                            <InputError message={errors.performed_at} />
+                            <input
+                                type="hidden"
+                                name="performed_at"
+                                value={fromDateTimeLocal(performedAt)}
+                            />
+                            <InputError message={errors.performed_at}/>
                         </div>
 
                         <Button type="submit" disabled={processing}>

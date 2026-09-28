@@ -1,25 +1,36 @@
 <script lang="ts">
-    import { router } from '@inertiajs/svelte';
-    import Plus from '@lucide/svelte/icons/plus';
-    import X from '@lucide/svelte/icons/x';
-    import { untrack } from 'svelte';
+    import {router} from '@inertiajs/svelte';
+    import {untrack} from 'svelte';
     import ExerciseController from '@/actions/App/Http/Controllers/ExerciseController';
     import ExerciseSetController from '@/actions/App/Http/Controllers/ExerciseSetController';
     import ConfirmDialog from '@/components/ConfirmDialog.svelte';
     import SetRow from '@/components/workouts/SetRow.svelte';
-    import { formatDuration } from '@/lib/datetime';
-    import type { Exercise, ExerciseSet, SetDraft, Workout } from '@/types';
+    import {formatDuration} from '@/lib/datetime';
+    import type {Exercise, ExerciseSet, SetDraft, Workout} from '@/types';
+    import { Plus, X } from '@lucide/svelte';
 
-    let { exercise }: { exercise: Exercise } = $props();
+    let {exercise}: { exercise: Exercise } = $props();
 
     const toDraft = (set: ExerciseSet): SetDraft => ({
         id: set.id,
         reps: String(set.reps),
         weight: set.weight ?? '',
         completed: set.completed_at !== null,
+        completedAt: set.completed_at,
     });
 
     let sets = $state<SetDraft[]>([]);
+    let focusedSetId = $state<number | null>(null);
+
+    function trackFocus(event: FocusEvent) {
+        const target = event.target;
+        const row =
+            target instanceof HTMLElement
+                ? target.closest<HTMLElement>('[data-set-id]')
+                : null;
+
+        focusedSetId = row === null ? null : Number(row.dataset.setId);
+    }
 
     $effect(() => {
         const live = exercise.sets;
@@ -33,11 +44,15 @@
                 }
             }
 
-            const knownIds = new Set(sets.map((set) => set.id));
-
             for (const set of live) {
-                if (!knownIds.has(set.id)) {
+                const draft = sets.find(
+                    (candidate) => candidate.id === set.id,
+                );
+
+                if (draft === undefined) {
                     sets.push(toDraft(set));
+                } else if (draft.id !== focusedSetId) {
+                    Object.assign(draft, toDraft(set));
                 }
             }
         });
@@ -66,40 +81,50 @@
                 ...props.workout,
                 exercises: (props.workout.exercises ?? []).map((candidate) =>
                     candidate.id === exercise.id
-                        ? { ...candidate, sets }
+                        ? {...candidate, sets}
                         : candidate,
                 ),
             },
         };
     }
 
-    const visit = { preserveScroll: true, preserveState: true };
+    function setsIn(props: { workout: Workout }): ExerciseSet[] {
+        return (
+            (props.workout.exercises ?? []).find(
+                (candidate) => candidate.id === exercise.id,
+            )?.sets ?? []
+        );
+    }
+
+    const visit = {preserveScroll: true, preserveState: true};
 
     function addSet() {
         const previous = sets[sets.length - 1];
+        const pending: ExerciseSet = {
+            id: -Date.now(),
+            exercise_id: exercise.id,
+            reps: Number(previous?.reps) || 0,
+            weight: previous?.weight || null,
+            completed_at: null,
+        };
 
         router
             .optimistic((props: { workout: Workout }) =>
-                withSets(props, [
-                    ...exercise.sets,
-                    {
-                        id: -Date.now(),
-                        exercise_id: exercise.id,
-                        reps: Number(previous?.reps) || 0,
-                        weight: previous?.weight || null,
-                        completed_at: null,
-                    },
-                ]),
+                withSets(props, [...setsIn(props), pending]),
             )
             .post(ExerciseSetController.store.url(exercise.id), {}, visit);
     }
 
     function removeSet(id: number) {
+        if (id < 0) {
+            return;
+        }
+
         router
             .optimistic((props: { workout: Workout }) =>
                 withSets(
                     props,
-                    exercise.sets.filter((set) => set.id !== id),
+                    setsIn(props).filter((set) => set.id !== id),
                 ),
             )
             .delete(ExerciseSetController.destroy.url(id), visit);
@@ -142,6 +167,10 @@
     }
 
     function save() {
+        if (!editing) {
+            return;
+        }
+
         editing = false;
 
         const duration = (Number(minutes) || 0) * 60 + (Number(seconds) || 0);
@@ -156,7 +185,7 @@
 
         router.patch(
             ExerciseController.update.url(exercise.id),
-            { duration_seconds: duration, distance_miles: miles },
+            {duration_seconds: duration, distance_miles: miles},
             visit,
         );
     }
@@ -218,7 +247,7 @@
                 aria-label="Remove exercise"
                 class="text-muted-foreground transition-colors hover:text-destructive"
             >
-                <X class="size-4" />
+                <X class="size-4"/>
             </button>
         </div>
     </header>
@@ -231,7 +260,7 @@
     />
 
     {#if exercise.type === 'strength'}
-        <div>
+        <div onfocusin={trackFocus} onfocusout={() => (focusedSetId = null)}>
             {#each sets as set, index (set.id)}
                 <SetRow
                     {set}
@@ -246,7 +275,8 @@
                 onclick={addSet}
                 class="flex items-center gap-2 pt-3 text-sm text-muted-foreground transition-colors hover:text-foreground"
             >
-                <Plus class="size-4" /> Add a set
+                <Plus class="size-4"/>
+                Add a set
             </button>
         </div>
     {:else if editing}
@@ -268,7 +298,7 @@
                 class="w-20 border-b border-border bg-transparent pb-1 text-right font-mono text-2xl font-semibold tabular-nums focus:border-primary focus:outline-none"
             />
             <span class="font-mono text-2xl font-semibold text-muted-foreground"
-                >:</span
+            >:</span
             >
             <input
                 type="text"
@@ -302,7 +332,7 @@
                 <span class="font-mono text-2xl font-semibold tabular-nums">
                     {exercise.distance_miles}
                     <span class="font-mono text-xs text-muted-foreground"
-                        >mi</span
+                    >mi</span
                     >
                 </span>
             {/if}

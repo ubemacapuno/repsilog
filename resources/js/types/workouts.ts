@@ -33,6 +33,7 @@ export type SetDraft = {
     reps: string;
     weight: string;
     completed: boolean;
+    completedAt: string | null;
 };
 
 export type Paginated<T> = {

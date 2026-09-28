@@ -4,6 +4,12 @@ export function toDateTimeLocal(value: string | Date = new Date()): string {
     return format(value, "yyyy-MM-dd'T'HH:mm");
 }
 
+export function fromDateTimeLocal(value: string): string {
+    const parsed = new Date(value);
+
+    return Number.isNaN(parsed.getTime()) ? value : parsed.toISOString();
+}
+
 export function formatDuration(totalSeconds: number | null): string {
     const {
         hours = 0,

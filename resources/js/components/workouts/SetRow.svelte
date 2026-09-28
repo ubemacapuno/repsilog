@@ -1,9 +1,8 @@
 <script lang="ts">
-    import { router } from '@inertiajs/svelte';
-    import Check from '@lucide/svelte/icons/check';
-    import X from '@lucide/svelte/icons/x';
+    import {router} from '@inertiajs/svelte';
     import ExerciseSetController from '@/actions/App/Http/Controllers/ExerciseSetController';
-    import type { SetDraft } from '@/types';
+    import type {SetDraft} from '@/types';
+    import { Check, X } from '@lucide/svelte';
 
     let {
         set,
@@ -38,21 +37,24 @@
             {
                 reps: Number(draft.reps) || 0,
                 weight: draft.weight === '' ? null : draft.weight,
-                completed_at: draft.completed ? new Date().toISOString() : null,
+                completed_at: draft.completedAt,
             },
-            { preserveScroll: true, preserveState: true },
+            {preserveScroll: true, preserveState: true},
         );
     }
 
     function toggle() {
-        const draft = { ...set, completed: !set.completed };
+        const completed = !set.completed;
+        const completedAt = completed
+            ? (set.completedAt ?? new Date().toISOString())
+            : null;
 
-        onchange({ completed: draft.completed });
-        persist(draft);
+        onchange({completed, completedAt});
+        persist({...set, completed, completedAt});
     }
 </script>
 
-<div class="flex items-center gap-3 py-2">
+<div class="flex items-center gap-3 py-2" data-set-id={set.id}>
     <span class="w-4 font-mono text-xs text-muted-foreground">{index + 1}</span>
 
     <input
@@ -85,10 +87,11 @@
     <button
         type="button"
         onclick={onremove}
+        disabled={set.id < 0}
         aria-label="Remove set"
-        class="ml-auto text-muted-foreground transition-colors hover:text-destructive"
+        class="ml-auto text-muted-foreground transition-colors hover:text-destructive disabled:pointer-events-none disabled:opacity-40"
     >
-        <X class="size-4" />
+        <X class="size-4"/>
     </button>
 
     <button
@@ -97,9 +100,9 @@
         aria-pressed={set.completed}
         aria-label="Completed"
         class="flex size-9 shrink-0 items-center justify-center rounded-full border transition-colors {set.completed
-            ? 'border-primary bg-primary text-white'
+            ? 'border-primary bg-primary text-primary-foreground'
             : 'border-muted-foreground/40 text-transparent hover:border-muted-foreground'}"
     >
-        <Check class="size-5" />
+        <Check class="size-5"/>
     </button>
 </div>

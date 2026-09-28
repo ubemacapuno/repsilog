@@ -20,17 +20,20 @@ class DashboardController extends Controller
             'stats' => [
                 'workouts' => $user->workouts()->count(),
                 'workoutsThisWeek' => $user->workouts()
-                    ->where('performed_at', '>=', now()->startOfWeek())
+                    ->whereBetween('performed_at', [now()->startOfWeek(), now()->endOfWeek()])
                     ->count(),
                 // TODO: two queries run here. completedSets() is rebuilt for the
                 // lifetime count and again for the 7-day sum. Look into collapsing them.
                 'setsCompleted' => $this->completedSets($user->id)->count(),
-                'volumeLast7Days' => (int) $this->completedSets($user->id, now()->subDays(7))
-                    ->sum(DB::raw('reps * COALESCE(weight, 0)')),
+                'volumeLast7Days' => (int) round((float) $this->completedSets(
+                    $user->id,
+                    now()->subDays(7),
+                )->sum(DB::raw('reps * COALESCE(weight, 0)'))),
             ],
             'recentWorkouts' => $user->workouts()
                 ->withCount('exercises')
                 ->latest('performed_at')
+                ->latest('id')
                 ->limit(5)
                 ->get(),
         ]);

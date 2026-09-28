@@ -193,3 +193,33 @@ it('deleting a workout takes its exercises and sets with it', function () {
         ->and(Exercise::count())->toBe(0)
         ->and(ExerciseSet::count())->toBe(0);
 });
+
+it('paginates workouts that share a performed_at without repeating any', function () {
+    $user = User::factory()->create();
+    Workout::factory()->for($user)->count(12)->create([
+        'performed_at' => now()->setTime(10, 0),
+    ]);
+
+    $actor = $this->actingAs($user);
+
+    $first = $actor->get(route('workouts.index'))
+        ->viewData('page')['props']['workouts']['data'];
+    $second = $actor->get(route('workouts.index', ['page' => 2]))
+        ->viewData('page')['props']['workouts']['data'];
+
+    $ids = [...collect($first)->pluck('id'), ...collect($second)->pluck('id')];
+
+    expect($ids)->toHaveCount(12)
+        ->and(array_unique($ids))->toHaveCount(12);
+});
+
+it('rejects a duration sent for a strength exercise', function () {
+    $user = User::factory()->create();
+    $exercise = exerciseOwnedBy($user);
+
+    $this->actingAs($user)
+        ->patch(route('exercises.update', $exercise), ['duration_seconds' => 600])
+        ->assertSessionHasErrors('duration_seconds');
+
+    expect($exercise->refresh()->duration_seconds)->toBeNull();
+});

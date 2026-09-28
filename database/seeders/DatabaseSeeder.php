@@ -40,10 +40,10 @@ class DatabaseSeeder extends Seeder
 
         $this->addStrengthExercises($workout, [
             'Bench Press' => [
-                ['reps' => 12, 'weight' => 135],
-                ['reps' => 10, 'weight' => 155],
-                ['reps' => 8, 'weight' => 175],
-                ['reps' => 6, 'weight' => 185],
+                ['reps' => 8, 'weight' => 135],
+                ['reps' => 5, 'weight' => 155],
+                ['reps' => 3, 'weight' => 175],
+                ['reps' => 2, 'weight' => 185],
             ],
             'Overhead Press' => [
                 ['reps' => 10, 'weight' => 75],
@@ -66,12 +66,12 @@ class DatabaseSeeder extends Seeder
 
         $this->addStrengthExercises($workout, [
             'Squat' => [
-                ['reps' => 10, 'weight' => 185],
+                ['reps' => 8, 'weight' => 185],
                 ['reps' => 8, 'weight' => 205],
                 ['reps' => 5, 'weight' => 225],
             ],
             'Romanian Deadlift' => [
-                ['reps' => 10, 'weight' => 155],
+                ['reps' => 8, 'weight' => 155],
                 ['reps' => 10, 'weight' => 155],
             ],
         ]);
