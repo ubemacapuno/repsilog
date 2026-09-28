@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Enums\ExerciseType;
 use App\Models\Exercise;
+use App\Models\ExerciseSet;
 use App\Models\User;
 use App\Models\Workout;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -133,17 +134,10 @@ class DatabaseSeeder extends Seeder
             ->create()
             ->each(function (Workout $workout) use ($catalog): void {
                 foreach ($catalog->random(3) as $exerciseId) {
-                    $workout->exercises()
-                        ->create(['exercise_id' => $exerciseId])
-                        ->sets()
-                        ->createMany(array_map(
-                            fn (): array => [
-                                'reps' => fake()->numberBetween(5, 12),
-                                'weight' => fake()->randomFloat(2, 45, 315),
-                                'completed_at' => $workout->performed_at,
-                            ],
-                            range(1, 3),
-                        ));
+                    ExerciseSet::factory()
+                        ->count(3)
+                        ->for($workout->exercises()->create(['exercise_id' => $exerciseId]))
+                        ->create(['completed_at' => $workout->performed_at]);
                 }
             });
     }

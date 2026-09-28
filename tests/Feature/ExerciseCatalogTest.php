@@ -121,6 +121,16 @@ it('refuses to delete an exercise a workout still uses', function () {
     expect(Exercise::count())->toBe(1);
 });
 
+it('rejects a rename that collides only by case', function () {
+    $user = User::factory()->create();
+    catalogEntryFor($user, 'Squat');
+    $exercise = catalogEntryFor($user, 'Front Squat');
+
+    $this->actingAs($user)
+        ->patch(route('exercises.update', $exercise), ['name' => 'squat'])
+        ->assertInvalid('name');
+});
+
 it('offers the whole catalog when adding an exercise to a workout', function () {
     $user = User::factory()->create();
     $workout = Workout::factory()->for($user)->create();

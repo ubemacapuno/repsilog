@@ -75,7 +75,7 @@ it('reuses the catalog entry when the same name is added again', function () {
         ->workoutExercises->toHaveCount(2);
 });
 
-it('keeps the catalog type when an existing name is added with a different one', function () {
+it('rejects cardio fields when the catalog says the name is a strength move', function () {
     $user = User::factory()->create();
     $workout = Workout::factory()->for($user)->create();
     Exercise::factory()->for($user)->create(['name' => 'Row', 'type' => ExerciseType::Strength]);
@@ -85,10 +85,57 @@ it('keeps the catalog type when an existing name is added with a different one',
             'name' => 'Row',
             'type' => 'cardio',
             'duration_seconds' => 600,
+            'distance_miles' => '2.00',
+        ])
+        ->assertInvalid(['duration_seconds', 'distance_miles']);
+
+    expect($user->exercises()->sole()->type)->toBe(ExerciseType::Strength)
+        ->and($workout->exercises()->count())->toBe(0);
+});
+
+it('requires a duration when the catalog says the name is cardio', function () {
+    $user = User::factory()->create();
+    $workout = Workout::factory()->for($user)->create();
+    Exercise::factory()->for($user)->cardio()->create(['name' => 'Run']);
+
+    $this->actingAs($user)
+        ->post(route('workout-exercises.store', $workout), [
+            'name' => 'Run',
+            'type' => 'strength',
+        ])
+        ->assertInvalid('duration_seconds');
+
+    expect($workout->exercises()->count())->toBe(0);
+});
+
+it('never stores cardio fields on a strength entry', function () {
+    $user = User::factory()->create();
+    $workout = Workout::factory()->for($user)->create();
+
+    $this->actingAs($user)
+        ->post(route('workout-exercises.store', $workout), [
+            'name' => 'Bench Press',
+            'type' => 'strength',
+            'duration_seconds' => 600,
+        ])
+        ->assertInvalid('duration_seconds');
+
+    expect($workout->exercises()->count())->toBe(0);
+});
+
+it('reuses a catalog entry whose name differs only by case', function () {
+    $user = User::factory()->create();
+    $workout = Workout::factory()->for($user)->create();
+    Exercise::factory()->for($user)->create(['name' => 'Bench Press']);
+
+    $this->actingAs($user)
+        ->post(route('workout-exercises.store', $workout), [
+            'name' => 'bench press',
+            'type' => 'strength',
         ])
         ->assertRedirect();
 
-    expect($user->exercises()->sole()->type)->toBe(ExerciseType::Strength);
+    expect($user->exercises()->sole()->name)->toBe('Bench Press');
 });
 
 it('does not borrow another users catalog entry', function () {
