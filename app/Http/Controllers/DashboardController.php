@@ -21,6 +21,8 @@ class DashboardController extends Controller
                 'workoutsThisWeek' => $user->workouts()
                     ->where('performed_at', '>=', now()->startOfWeek())
                     ->count(),
+                // TODO: two queries run here. completedSets() is rebuilt for the
+                // count and again for the sum. Look into collapsing them into one.
                 'setsCompleted' => $this->completedSets($user->id)->count(),
                 'totalVolume' => (int) $this->completedSets($user->id)
                     ->sum(DB::raw('reps * COALESCE(weight, 0)')),
