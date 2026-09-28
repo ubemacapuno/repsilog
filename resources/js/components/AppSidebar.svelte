@@ -1,11 +1,11 @@
 <script lang="ts">
-    import { Link } from '@inertiajs/svelte';
+    import { Link, router } from '@inertiajs/svelte';
     import BookOpen from '@lucide/svelte/icons/book-open';
     import Dumbbell from '@lucide/svelte/icons/dumbbell';
     import FolderGit2 from '@lucide/svelte/icons/folder-git-2';
     import LayoutGrid from '@lucide/svelte/icons/layout-grid';
     import ListChecks from '@lucide/svelte/icons/list-checks';
-    import type { Snippet } from 'svelte';
+    import { onMount, type Snippet } from 'svelte';
     import AppLogo from '@/components/AppLogo.svelte';
     import NavFooter from '@/components/NavFooter.svelte';
     import NavMain from '@/components/NavMain.svelte';
@@ -18,6 +18,7 @@
         SidebarMenu,
         SidebarMenuButton,
         SidebarMenuItem,
+        useSidebar,
     } from '@/components/ui/sidebar';
     import { toUrl } from '@/lib/utils';
     import { dashboard } from '@/routes';
@@ -30,6 +31,10 @@
     }: {
         children?: Snippet;
     } = $props();
+
+    const { setOpenMobile } = useSidebar();
+
+    onMount(() => router.on('navigate', () => setOpenMobile(false)));
 
     const mainNavItems: NavItem[] = [
         {
