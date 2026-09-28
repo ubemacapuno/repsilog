@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Enums\ExerciseType;
 use App\Models\Exercise;
+use App\Models\ExerciseSet;
 use App\Models\User;
 use App\Models\Workout;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -51,7 +52,7 @@ class DatabaseSeeder extends Seeder
             ],
             'Push Up' => [
                 ['reps' => 20, 'weight' => null],
-                ['reps' => 18, 'weight' => null],
+                ['reps' => 18, 'weight' => null, 'completed' => false],
             ],
         ]);
     }
@@ -122,12 +123,16 @@ class DatabaseSeeder extends Seeder
         Workout::factory()
             ->for($user)
             ->count(8)
-            ->has(Exercise::factory()->count(3)->hasSets(3))
+            ->has(
+                Exercise::factory()
+                    ->count(3)
+                    ->has(ExerciseSet::factory()->count(3)->completed(), 'sets')
+            )
             ->create();
     }
 
     /**
-     * @param  array<string, list<array{reps: int, weight: int|null}>>  $exercises
+     * @param  array<string, list<array{reps: int, weight: int|null, completed?: bool}>>  $exercises
      */
     private function addStrengthExercises(Workout $workout, array $exercises): void
     {
@@ -135,7 +140,16 @@ class DatabaseSeeder extends Seeder
             $workout->exercises()
                 ->create(['name' => $name])
                 ->sets()
-                ->createMany($sets);
+                ->createMany(array_map(
+                    fn (array $set): array => [
+                        'reps' => $set['reps'],
+                        'weight' => $set['weight'],
+                        'completed_at' => ($set['completed'] ?? true)
+                            ? $workout->performed_at
+                            : null,
+                    ],
+                    $sets,
+                ));
         }
     }
 
