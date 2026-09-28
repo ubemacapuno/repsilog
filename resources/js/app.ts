@@ -24,6 +24,9 @@ void createInertiaApp({
     progress: {
         color: '#4B5563',
     },
+    defaults: {
+        visitOptions: () => ({ viewTransition: true }),
+    },
 });
 
 // This will set light / dark mode on page load...

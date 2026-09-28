@@ -1,6 +1,7 @@
 <script lang="ts">
     import { Link, page } from '@inertiajs/svelte';
     import AppHead from '@/components/AppHead.svelte';
+    import AppLogoIcon from '@/components/AppLogoIcon.svelte';
     import { Button } from '@/components/ui/button';
     import { toUrl } from '@/lib/utils';
     import { login, register } from '@/routes';
@@ -15,7 +16,8 @@
     class="flex min-h-screen flex-col items-center justify-center gap-10 bg-background p-6 text-foreground"
 >
     <div class="flex flex-col items-center gap-3 text-center">
-        <h1 class="font-mono text-sm tracking-[0.3em] uppercase">Rep Silog</h1>
+        <h1 class="font-mono text-3xl tracking-[0.3em] uppercase">Rep Silog</h1>
+        <AppLogoIcon class="size-16" />
         <p class="max-w-sm text-sm text-muted-foreground">
             Log every set, every rep, every mile. Nothing else.
         </p>
