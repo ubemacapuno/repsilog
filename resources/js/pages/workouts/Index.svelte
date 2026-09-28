@@ -14,7 +14,7 @@
 <script lang="ts">
     import {Form, Link} from '@inertiajs/svelte';
     import Plus from '@lucide/svelte/icons/plus';
-    import WorkoutController from '@/actions/App/Http/Controllers/WorkoutController';
+    import WorkoutSessionController from '@/actions/App/Http/Controllers/WorkoutSessionController';
     import AppHead from '@/components/AppHead.svelte';
     import InputError from '@/components/InputError.svelte';
     import {Button} from '@/components/ui/button';
@@ -32,9 +32,9 @@
         toDateTimeLocal,
     } from '@/lib/datetime';
     import {show} from '@/routes/workouts';
-    import type {Paginated, Workout} from '@/types';
+    import type {Paginated, WorkoutSession} from '@/types';
 
-    let {workouts}: { workouts: Paginated<Workout> } = $props();
+    let {workouts}: { workouts: Paginated<WorkoutSession> } = $props();
 
     let open = $state(false);
     let performedAt = $state(toDateTimeLocal());
@@ -60,7 +60,7 @@
                 <DialogTitle>New workout</DialogTitle>
 
                 <Form
-                    {...WorkoutController.store.form()}
+                    {...WorkoutSessionController.store.form()}
                     class="grid gap-4"
                     onSuccess={() => (open = false)}
                 >

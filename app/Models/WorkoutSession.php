@@ -2,15 +2,15 @@
 
 namespace App\Models;
 
-use Database\Factories\WorkoutFactory;
+use Database\Factories\WorkoutSessionFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Workout extends Model
+class WorkoutSession extends Model
 {
-    /** @use HasFactory<WorkoutFactory> */
+    /** @use HasFactory<WorkoutSessionFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -28,11 +28,14 @@ class Workout extends Model
     }
 
     /**
-     * @return HasMany<Exercise, $this>
+     * The exercises as they were performed in this workout, each holding its
+     * own sets. The reusable names live on Exercise.
+     *
+     * @return HasMany<WorkoutSessionExercise, $this>
      */
     public function exercises(): HasMany
     {
-        return $this->hasMany(Exercise::class);
+        return $this->hasMany(WorkoutSessionExercise::class);
     }
 
     /**

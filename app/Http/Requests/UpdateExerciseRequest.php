@@ -2,30 +2,32 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\ExerciseType;
 use App\Models\Exercise;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateExerciseRequest extends FormRequest
 {
     /**
+     * Only the name is editable. Changing the type would rewrite history for
+     * every workout already referencing this exercise.
+     *
      * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         $exercise = $this->route('exercise');
 
-        $isCardio = $exercise instanceof Exercise
-            && $exercise->type === ExerciseType::Cardio;
-
         return [
-            'duration_seconds' => $isCardio
-                ? ['required', 'integer', 'min:1']
-                : ['prohibited'],
-            'distance_miles' => $isCardio
-                ? ['nullable', 'numeric', 'between:0,999.99', 'decimal:0,2']
-                : ['prohibited'],
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('exercises')
+                    ->where('user_id', $this->user()->id)
+                    ->ignore($exercise instanceof Exercise ? $exercise->id : null),
+            ],
         ];
     }
 }

@@ -4,8 +4,9 @@ namespace Database\Factories;
 
 use App\Enums\ExerciseType;
 use App\Models\Exercise;
-use App\Models\Workout;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
 
 /**
  * @extends Factory<Exercise>
@@ -13,29 +14,24 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 class ExerciseFactory extends Factory
 {
     /**
-     * Define the model's default state.
+     * Names are generated rather than picked from a list, because a user cannot
+     * hold the same exercise name twice.
      *
      * @return array<string, mixed>
      */
     public function definition(): array
     {
         return [
-            'workout_id' => Workout::factory(),
-            'name' => fake()->randomElement(['Bench Press', 'Squat', 'Deadlift', 'Overhead Press', 'Row']),
+            'user_id' => User::factory(),
+            'name' => Str::headline(fake()->unique()->slug(2)),
             'type' => ExerciseType::Strength,
-            'duration_seconds' => null,
-            'distance_miles' => null,
-            'notes' => fake()->optional()->sentence(),
         ];
     }
 
     public function cardio(): static
     {
         return $this->state(fn (array $attributes) => [
-            'name' => fake()->randomElement(['Run', 'Walk', 'Row', 'Cycle']),
             'type' => ExerciseType::Cardio,
-            'duration_seconds' => fake()->numberBetween(600, 36000),
-            'distance_miles' => fake()->randomFloat(2, 1, 6),
         ]);
     }
 }

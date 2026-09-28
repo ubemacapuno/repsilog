@@ -1,15 +1,17 @@
 <script lang="ts">
     import {router} from '@inertiajs/svelte';
     import {untrack} from 'svelte';
-    import ExerciseController from '@/actions/App/Http/Controllers/ExerciseController';
+    import WorkoutSessionExerciseController from '@/actions/App/Http/Controllers/WorkoutSessionExerciseController';
     import ExerciseSetController from '@/actions/App/Http/Controllers/ExerciseSetController';
     import ConfirmDialog from '@/components/ConfirmDialog.svelte';
     import SetRow from '@/components/workouts/SetRow.svelte';
     import {formatDuration} from '@/lib/datetime';
-    import type {Exercise, ExerciseSet, SetDraft, Workout} from '@/types';
+    import type {ExerciseSet, SetDraft, WorkoutSession, WorkoutSessionExercise} from '@/types';
     import { Plus, X } from '@lucide/svelte';
 
-    let {exercise}: { exercise: Exercise } = $props();
+    let {exercise}: { exercise: WorkoutSessionExercise } = $props();
+
+    const movement = $derived(exercise.exercise);
 
     const toDraft = (set: ExerciseSet): SetDraft => ({
         id: set.id,
@@ -75,7 +77,7 @@
         totalVolume === 0 ? 'BW' : totalVolume.toLocaleString(),
     );
 
-    function withSets(props: { workout: Workout }, sets: ExerciseSet[]) {
+    function withSets(props: { workout: WorkoutSession }, sets: ExerciseSet[]) {
         return {
             workout: {
                 ...props.workout,
@@ -88,7 +90,7 @@
         };
     }
 
-    function setsIn(props: { workout: Workout }): ExerciseSet[] {
+    function setsIn(props: { workout: WorkoutSession }): ExerciseSet[] {
         return (
             (props.workout.exercises ?? []).find(
                 (candidate) => candidate.id === exercise.id,
@@ -102,14 +104,14 @@
         const previous = sets[sets.length - 1];
         const pending: ExerciseSet = {
             id: -Date.now(),
-            exercise_id: exercise.id,
+            workout_session_exercise_id: exercise.id,
             reps: Number(previous?.reps) || 0,
             weight: previous?.weight || null,
             completed_at: null,
         };
 
         router
-            .optimistic((props: { workout: Workout }) =>
+            .optimistic((props: { workout: WorkoutSession }) =>
                 withSets(props, [...setsIn(props), pending]),
             )
             .post(ExerciseSetController.store.url(exercise.id), {}, visit);
@@ -121,7 +123,7 @@
         }
 
         router
-            .optimistic((props: { workout: Workout }) =>
+            .optimistic((props: { workout: WorkoutSession }) =>
                 withSets(
                     props,
                     setsIn(props).filter((set) => set.id !== id),
@@ -134,7 +136,7 @@
 
     function removeExercise() {
         router
-            .optimistic((props: { workout: Workout }) => ({
+            .optimistic((props: { workout: WorkoutSession }) => ({
                 workout: {
                     ...props.workout,
                     exercises: (props.workout.exercises ?? []).filter(
@@ -142,7 +144,7 @@
                     ),
                 },
             }))
-            .delete(ExerciseController.destroy.url(exercise.id), visit);
+            .delete(WorkoutSessionExerciseController.destroy.url(exercise.id), visit);
     }
 
     let editing = $state(false);
@@ -184,7 +186,7 @@
         }
 
         router.patch(
-            ExerciseController.update.url(exercise.id),
+            WorkoutSessionExerciseController.update.url(exercise.id),
             {duration_seconds: duration, distance_miles: miles},
             visit,
         );
@@ -203,10 +205,10 @@
 
 <article class="border-t border-border py-6">
     <header class="flex items-start justify-between gap-6 pb-2">
-        <h2 class="text-base font-semibold">{exercise.name}</h2>
+        <h2 class="text-base font-semibold">{movement.name}</h2>
 
         <div class="flex items-start gap-4">
-            {#if exercise.type === 'strength'}
+            {#if movement.type === 'strength'}
                 <dl class="flex gap-6 text-right">
                     <div>
                         <dt
@@ -254,12 +256,12 @@
 
     <ConfirmDialog
         bind:open={confirmingDelete}
-        title="Delete {exercise.name}?"
+        title="Delete {movement.name}?"
         description="This removes the exercise and every set logged under it. This cannot be undone."
         onconfirm={removeExercise}
     />
 
-    {#if exercise.type === 'strength'}
+    {#if movement.type === 'strength'}
         <div onfocusin={trackFocus} onfocusout={() => (focusedSetId = null)}>
             {#each sets as set, index (set.id)}
                 <SetRow

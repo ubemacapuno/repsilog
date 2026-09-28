@@ -16,7 +16,7 @@
     import AppHead from '@/components/AppHead.svelte';
     import { formatWorkoutDate } from '@/lib/datetime';
     import { show } from '@/routes/workouts';
-    import type { Workout } from '@/types';
+    import type { WorkoutSession } from '@/types';
 
     let {
         stats,
@@ -24,16 +24,19 @@
     }: {
         stats: {
             workouts: number;
-            workoutsThisWeek: number;
+            workoutsLast7Days: number;
             setsCompleted: number;
             volumeLast7Days: number;
         };
-        recentWorkouts: Workout[];
+        recentWorkouts: WorkoutSession[];
     } = $props();
 
     const tiles: { label: string; value: string; unit?: string }[] = $derived([
         { label: 'Workouts', value: stats.workouts.toLocaleString() },
-        { label: 'This week', value: stats.workoutsThisWeek.toLocaleString() },
+        {
+            label: 'Workouts (7d)',
+            value: stats.workoutsLast7Days.toLocaleString(),
+        },
         { label: 'Sets done', value: stats.setsCompleted.toLocaleString() },
         {
             label: 'Volume (7d)',

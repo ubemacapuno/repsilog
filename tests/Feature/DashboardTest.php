@@ -1,9 +1,9 @@
 <?php
 
-use App\Models\Exercise;
 use App\Models\ExerciseSet;
 use App\Models\User;
-use App\Models\Workout;
+use App\Models\WorkoutSession;
+use App\Models\WorkoutSessionExercise;
 use Inertia\Testing\AssertableInertia;
 
 test('guests are redirected to the login page', function () {
@@ -21,8 +21,8 @@ test('authenticated users can visit the dashboard', function () {
 
 test('the dashboard counts only the users own completed sets', function () {
     $user = User::factory()->create();
-    $exercise = Exercise::factory()
-        ->for(Workout::factory()->for($user)->create(['performed_at' => now()]))
+    $exercise = WorkoutSessionExercise::factory()
+        ->for(WorkoutSession::factory()->for($user)->create(['performed_at' => now()]))
         ->create();
 
     ExerciseSet::factory()->for($exercise)->create([
@@ -41,21 +41,24 @@ test('the dashboard counts only the users own completed sets', function () {
         ->get(route('dashboard'))
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('stats.workouts', 1)
-            ->where('stats.workoutsThisWeek', 1)
+            ->where('stats.workoutsLast7Days', 1)
             ->where('stats.setsCompleted', 1)
             ->where('stats.volumeLast7Days', 1000)
-            ->has('recentWorkouts', 1)
+            ->has('recentWorkouts', 1, fn (AssertableInertia $workout) => $workout
+                ->where('exercises_count', 1)
+                ->etc()
+            )
         );
 });
 
 test('volume covers only the last seven days, while set counts stay lifetime', function () {
     $user = User::factory()->create();
 
-    $recent = Exercise::factory()
-        ->for(Workout::factory()->for($user)->create(['performed_at' => now()->subDays(2)]))
+    $recent = WorkoutSessionExercise::factory()
+        ->for(WorkoutSession::factory()->for($user)->create(['performed_at' => now()->subDays(2)]))
         ->create();
-    $old = Exercise::factory()
-        ->for(Workout::factory()->for($user)->create(['performed_at' => now()->subDays(8)]))
+    $old = WorkoutSessionExercise::factory()
+        ->for(WorkoutSession::factory()->for($user)->create(['performed_at' => now()->subDays(8)]))
         ->create();
 
     ExerciseSet::factory()->for($recent)->create([
@@ -77,23 +80,23 @@ test('volume covers only the last seven days, while set counts stay lifetime', f
         );
 });
 
-test('a future dated workout is not counted in this week', function () {
+test('a future dated workout is not counted in the last seven days', function () {
     $user = User::factory()->create();
-    Workout::factory()->for($user)->create(['performed_at' => now()]);
-    Workout::factory()->for($user)->create(['performed_at' => now()->addWeeks(2)]);
+    WorkoutSession::factory()->for($user)->create(['performed_at' => now()]);
+    WorkoutSession::factory()->for($user)->create(['performed_at' => now()->addWeeks(2)]);
 
     $this->actingAs($user)
         ->get(route('dashboard'))
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('stats.workouts', 2)
-            ->where('stats.workoutsThisWeek', 1)
+            ->where('stats.workoutsLast7Days', 1)
         );
 });
 
 test('fractional plate weight rounds rather than truncates', function () {
     $user = User::factory()->create();
-    $exercise = Exercise::factory()
-        ->for(Workout::factory()->for($user)->create(['performed_at' => now()]))
+    $exercise = WorkoutSessionExercise::factory()
+        ->for(WorkoutSession::factory()->for($user)->create(['performed_at' => now()]))
         ->create();
 
     ExerciseSet::factory()->for($exercise)->create([
@@ -106,5 +109,27 @@ test('fractional plate weight rounds rather than truncates', function () {
         ->get(route('dashboard'))
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('stats.volumeLast7Days', 8)
+        );
+});
+
+test('a future dated workout does not inflate seven day volume', function () {
+    $user = User::factory()->create();
+
+    $entry = WorkoutSessionExercise::factory()
+        ->for(WorkoutSession::factory()->for($user)->create(['performed_at' => now()->addWeek()]))
+        ->create();
+
+    ExerciseSet::factory()->for($entry)->create([
+        'reps' => 10,
+        'weight' => '100.00',
+        'completed_at' => now(),
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('dashboard'))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('stats.setsCompleted', 1)
+            ->where('stats.workoutsLast7Days', 0)
+            ->where('stats.volumeLast7Days', 0)
         );
 });

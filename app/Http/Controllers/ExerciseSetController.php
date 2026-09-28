@@ -3,21 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\UpdateExerciseSetRequest;
-use App\Models\Exercise;
 use App\Models\ExerciseSet;
+use App\Models\WorkoutSessionExercise;
 use Illuminate\Http\RedirectResponse;
 
 class ExerciseSetController extends Controller
 {
-    public function store(Exercise $exercise): RedirectResponse
+    public function store(WorkoutSessionExercise $workoutSessionExercise): RedirectResponse
     {
-        $exercise->load('workout');
+        $workoutSessionExercise->load('workoutSession');
 
-        $this->authorize('update', $exercise);
+        $this->authorize('update', $workoutSessionExercise);
 
-        $previous = $exercise->sets()->latest('id')->first();
+        $previous = $workoutSessionExercise->sets()->latest('id')->first();
 
-        $exercise->sets()->create([
+        $workoutSessionExercise->sets()->create([
             'reps' => $previous->reps ?? 0,
             'weight' => $previous->weight ?? null,
             'completed_at' => null,
@@ -28,7 +28,7 @@ class ExerciseSetController extends Controller
 
     public function update(UpdateExerciseSetRequest $request, ExerciseSet $set): RedirectResponse
     {
-        $set->load('exercise.workout');
+        $set->load('workoutSessionExercise.workoutSession');
 
         $this->authorize('update', $set);
 
@@ -39,7 +39,7 @@ class ExerciseSetController extends Controller
 
     public function destroy(ExerciseSet $set): RedirectResponse
     {
-        $set->load('exercise.workout');
+        $set->load('workoutSessionExercise.workoutSession');
 
         $this->authorize('delete', $set);
 
