@@ -89,19 +89,19 @@
     <div>
         <h1 class="text-2xl font-bold">Exercises</h1>
         <p class="pt-1 text-sm text-muted-foreground">
-            Every movement you have logged. Renaming one updates it everywhere
-            it appears. Only exercises no workout uses can be deleted.
+            Renaming an exercise updates it in every workout. An exercise can
+            only be deleted once no workout uses it.
         </p>
     </div>
 
-    <table class="w-full text-sm">
+    <table class="w-full table-fixed text-sm">
         <thead>
         <tr
             class="border-b border-border font-mono text-xs tracking-widest text-muted-foreground uppercase"
         >
             <th class="py-2 text-left font-normal">Name</th>
-            <th class="py-2 text-left font-normal">Type</th>
-            <th class="py-2 text-right font-normal">Workouts</th>
+            <th class="w-24 py-2 text-left font-normal">Type</th>
+            <th class="w-20 py-2 text-right font-normal">Workouts</th>
             <th class="w-10"></th>
         </tr>
         </thead>
@@ -126,7 +126,7 @@
                         <button
                             type="button"
                             onclick={() => startEditing(exercise)}
-                            class="max-w-full truncate text-left font-semibold"
+                            class="w-full text-left font-semibold break-words"
                         >
                             {exercise.name}
                         </button>
