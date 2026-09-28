@@ -5,12 +5,11 @@ namespace App\Http\Controllers;
 use App\Http\Requests\UpdateExerciseSetRequest;
 use App\Models\Exercise;
 use App\Models\ExerciseSet;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Response;
+use Illuminate\Http\RedirectResponse;
 
 class ExerciseSetController extends Controller
 {
-    public function store(Exercise $exercise): JsonResponse
+    public function store(Exercise $exercise): RedirectResponse
     {
         $exercise->load('workout');
 
@@ -18,16 +17,16 @@ class ExerciseSetController extends Controller
 
         $previous = $exercise->sets()->latest('id')->first();
 
-        $set = $exercise->sets()->create([
+        $exercise->sets()->create([
             'reps' => $previous->reps ?? 0,
             'weight' => $previous->weight ?? null,
             'completed_at' => null,
         ]);
 
-        return response()->json($set, 201);
+        return back();
     }
 
-    public function update(UpdateExerciseSetRequest $request, ExerciseSet $set): JsonResponse
+    public function update(UpdateExerciseSetRequest $request, ExerciseSet $set): RedirectResponse
     {
         $set->load('exercise.workout');
 
@@ -35,10 +34,10 @@ class ExerciseSetController extends Controller
 
         $set->update($request->validated());
 
-        return response()->json($set);
+        return back();
     }
 
-    public function destroy(ExerciseSet $set): Response
+    public function destroy(ExerciseSet $set): RedirectResponse
     {
         $set->load('exercise.workout');
 
@@ -46,6 +45,6 @@ class ExerciseSetController extends Controller
 
         $set->delete();
 
-        return response()->noContent();
+        return back();
     }
 }

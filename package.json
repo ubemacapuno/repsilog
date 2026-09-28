@@ -17,6 +17,7 @@
         "@sveltejs/vite-plugin-svelte": "^7.0.0",
         "bits-ui": "^2.15.0",
         "clsx": "^2.1.1",
+        "date-fns": "^4.4.0",
         "laravel-vite-plugin": "^3.0.0",
         "svelte": "^5.16.0",
         "svelte-sonner": "^0.3.28",

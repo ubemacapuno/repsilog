@@ -11,7 +11,7 @@
 </script>
 
 {#if asChild}
-    {@render children?.({ onClick: handleClick })}
+    {@render children?.({ onclick: handleClick })}
 {:else}
     <button type="button" onclick={handleClick}>
         {@render children?.({})}

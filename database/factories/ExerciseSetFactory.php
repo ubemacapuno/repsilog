@@ -25,6 +25,11 @@ class ExerciseSetFactory extends Factory
         ];
     }
 
+    public function completed(): static
+    {
+        return $this->state(fn (array $attributes) => ['completed_at' => now()]);
+    }
+
     public function bodyweight(): static
     {
         return $this->state(fn (array $attributes) => ['weight' => null]);

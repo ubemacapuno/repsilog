@@ -1,4 +1,5 @@
 import type { Auth } from '@/types/auth';
+import type { BreadcrumbItem } from '@/types/navigation';
 
 // Extend ImportMeta interface for Vite...
 declare module 'vite/client' {
@@ -23,6 +24,9 @@ declare module '@inertiajs/core' {
             auth: Auth;
             sidebarOpen: boolean;
             [key: string]: unknown;
+        };
+        layoutProps: {
+            breadcrumbs: BreadcrumbItem[];
         };
     }
 }

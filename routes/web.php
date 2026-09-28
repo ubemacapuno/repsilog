@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExerciseController;
 use App\Http\Controllers\ExerciseSetController;
 use App\Http\Controllers\WorkoutController;
@@ -7,7 +8,7 @@ use App\Http\Controllers\WorkoutController;
 Route::inertia('/', 'Welcome')->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::inertia('dashboard', 'Dashboard')->name('dashboard');
+    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // There are no create or edit pages. New workouts come from a dialog on the
     // index, and workouts.show edits its own fields in place.
@@ -15,6 +16,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::post('workouts/{workout}/exercises', [ExerciseController::class, 'store'])
         ->name('exercises.store');
+    Route::patch('exercises/{exercise}', [ExerciseController::class, 'update'])
+        ->name('exercises.update');
     Route::delete('exercises/{exercise}', [ExerciseController::class, 'destroy'])
         ->name('exercises.destroy');
 
