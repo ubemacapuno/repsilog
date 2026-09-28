@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
@@ -52,10 +51,12 @@ class User extends Authenticatable
     }
 
     /**
-     * @return HasManyThrough<Exercise, Workout, $this>
+     * The user's exercise catalog, built up from everything they have logged.
+     *
+     * @return HasMany<Exercise, $this>
      */
-    public function exercises(): HasManyThrough
+    public function exercises(): HasMany
     {
-        return $this->hasManyThrough(Exercise::class, Workout::class);
+        return $this->hasMany(Exercise::class);
     }
 }

@@ -1,15 +1,17 @@
 <script lang="ts">
     import {router} from '@inertiajs/svelte';
     import {untrack} from 'svelte';
-    import ExerciseController from '@/actions/App/Http/Controllers/ExerciseController';
+    import WorkoutExerciseController from '@/actions/App/Http/Controllers/WorkoutExerciseController';
     import ExerciseSetController from '@/actions/App/Http/Controllers/ExerciseSetController';
     import ConfirmDialog from '@/components/ConfirmDialog.svelte';
     import SetRow from '@/components/workouts/SetRow.svelte';
     import {formatDuration} from '@/lib/datetime';
-    import type {Exercise, ExerciseSet, SetDraft, Workout} from '@/types';
+    import type {ExerciseSet, SetDraft, Workout, WorkoutExercise} from '@/types';
     import { Plus, X } from '@lucide/svelte';
 
-    let {exercise}: { exercise: Exercise } = $props();
+    let {exercise}: { exercise: WorkoutExercise } = $props();
+
+    const movement = $derived(exercise.exercise);
 
     const toDraft = (set: ExerciseSet): SetDraft => ({
         id: set.id,
@@ -102,7 +104,7 @@
         const previous = sets[sets.length - 1];
         const pending: ExerciseSet = {
             id: -Date.now(),
-            exercise_id: exercise.id,
+            workout_exercise_id: exercise.id,
             reps: Number(previous?.reps) || 0,
             weight: previous?.weight || null,
             completed_at: null,
@@ -142,7 +144,7 @@
                     ),
                 },
             }))
-            .delete(ExerciseController.destroy.url(exercise.id), visit);
+            .delete(WorkoutExerciseController.destroy.url(exercise.id), visit);
     }
 
     let editing = $state(false);
@@ -184,7 +186,7 @@
         }
 
         router.patch(
-            ExerciseController.update.url(exercise.id),
+            WorkoutExerciseController.update.url(exercise.id),
             {duration_seconds: duration, distance_miles: miles},
             visit,
         );
@@ -203,10 +205,10 @@
 
 <article class="border-t border-border py-6">
     <header class="flex items-start justify-between gap-6 pb-2">
-        <h2 class="text-base font-semibold">{exercise.name}</h2>
+        <h2 class="text-base font-semibold">{movement.name}</h2>
 
         <div class="flex items-start gap-4">
-            {#if exercise.type === 'strength'}
+            {#if movement.type === 'strength'}
                 <dl class="flex gap-6 text-right">
                     <div>
                         <dt
@@ -254,12 +256,12 @@
 
     <ConfirmDialog
         bind:open={confirmingDelete}
-        title="Delete {exercise.name}?"
+        title="Delete {movement.name}?"
         description="This removes the exercise and every set logged under it. This cannot be undone."
         onconfirm={removeExercise}
     />
 
-    {#if exercise.type === 'strength'}
+    {#if movement.type === 'strength'}
         <div onfocusin={trackFocus} onfocusout={() => (focusedSetId = null)}>
             {#each sets as set, index (set.id)}
                 <SetRow

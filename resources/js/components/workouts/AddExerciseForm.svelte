@@ -1,20 +1,18 @@
 <script lang="ts">
     import {Form} from '@inertiajs/svelte';
-    import ExerciseController from '@/actions/App/Http/Controllers/ExerciseController';
+    import WorkoutExerciseController from '@/actions/App/Http/Controllers/WorkoutExerciseController';
     import InputError from '@/components/InputError.svelte';
     import {Button} from '@/components/ui/button';
     import {Input} from '@/components/ui/input';
     import {Label} from '@/components/ui/label';
-    import type {ExerciseType} from '@/types';
-
-    type Suggestion = { name: string; type: ExerciseType };
+    import type {Exercise, ExerciseType} from '@/types';
 
     let {
         workoutId,
-        recentExercises = [],
+        exercises = [],
     }: {
         workoutId: number;
-        recentExercises?: Suggestion[];
+        exercises?: Exercise[];
     } = $props();
 
     let name = $state('');
@@ -27,14 +25,14 @@
     const query = $derived(name.trim().toLowerCase());
 
     const suggestions = $derived(
-        recentExercises
+        exercises
             .filter((exercise) => exercise.name.toLowerCase().includes(query))
             .slice(0, 12)
             .sort((a, b) => a.name.localeCompare(b.name)),
     );
 
     const known = $derived(
-        recentExercises.find(
+        exercises.find(
             (exercise) => exercise.name.toLowerCase() === query,
         ),
     );
@@ -47,7 +45,7 @@
         (Number(minutes) || 0) * 60 + (Number(seconds) || 0),
     );
 
-    function choose(suggestion: Suggestion) {
+    function choose(suggestion: Exercise) {
         name = suggestion.name;
         chosenType = suggestion.type;
         open = false;
@@ -105,7 +103,7 @@
 </script>
 
 <Form
-    {...ExerciseController.store.form(workoutId)}
+    {...WorkoutExerciseController.store.form(workoutId)}
     class="grid gap-4"
     resetOnSuccess
     options={{ preserveScroll: true }}

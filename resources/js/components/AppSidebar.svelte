@@ -4,6 +4,7 @@
     import Dumbbell from '@lucide/svelte/icons/dumbbell';
     import FolderGit2 from '@lucide/svelte/icons/folder-git-2';
     import LayoutGrid from '@lucide/svelte/icons/layout-grid';
+    import ListChecks from '@lucide/svelte/icons/list-checks';
     import type { Snippet } from 'svelte';
     import AppLogo from '@/components/AppLogo.svelte';
     import NavFooter from '@/components/NavFooter.svelte';
@@ -20,6 +21,7 @@
     } from '@/components/ui/sidebar';
     import { toUrl } from '@/lib/utils';
     import { dashboard } from '@/routes';
+    import { index as exercises } from '@/routes/exercises';
     import { index as workouts } from '@/routes/workouts';
     import type { NavItem } from '@/types';
 
@@ -39,6 +41,11 @@
             title: 'Workouts',
             href: workouts(),
             icon: Dumbbell,
+        },
+        {
+            title: 'Exercises',
+            href: exercises(),
+            icon: ListChecks,
         },
     ];
 

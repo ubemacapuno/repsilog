@@ -4,6 +4,7 @@ use App\Models\Exercise;
 use App\Models\ExerciseSet;
 use App\Models\User;
 use App\Models\Workout;
+use App\Models\WorkoutExercise;
 
 it('belongs to the user who logged it', function () {
     $user = User::factory()->create();
@@ -16,7 +17,7 @@ it('has many exercises', function () {
     $workout = Workout::factory()->hasExercises(3)->create();
 
     expect($workout->exercises)->toHaveCount(3)
-        ->and($workout->exercises->first())->toBeInstanceOf(Exercise::class);
+        ->and($workout->exercises->first())->toBeInstanceOf(WorkoutExercise::class);
 });
 
 it('keeps each users workouts separate', function () {
@@ -27,15 +28,16 @@ it('keeps each users workouts separate', function () {
         ->and(Workout::count())->toBe(7);
 });
 
-it('cascades deletes all the way down to sets', function () {
+it('cascades deletes all the way down to sets, leaving the catalog alone', function () {
     $workout = Workout::factory()
-        ->has(Exercise::factory()->hasSets(3))
+        ->has(WorkoutExercise::factory()->hasSets(3), 'exercises')
         ->create();
 
     $workout->delete();
 
-    expect(Exercise::count())->toBe(0)
-        ->and(ExerciseSet::count())->toBe(0);
+    expect(WorkoutExercise::count())->toBe(0)
+        ->and(ExerciseSet::count())->toBe(0)
+        ->and(Exercise::count())->toBe(1);
 });
 
 it('does not allow the owner to be mass assigned', function () {

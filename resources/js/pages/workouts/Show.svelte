@@ -9,14 +9,14 @@
     import ExerciseCard from '@/components/workouts/ExerciseCard.svelte';
     import {formatWorkoutDate, fromDateTimeLocal, toDateTimeLocal,} from '@/lib/datetime';
     import {index, show} from '@/routes/workouts';
-    import type {ExerciseType, Workout} from '@/types';
+    import type {Exercise, Workout} from '@/types';
 
     let {
         workout,
-        recentExercises,
+        exercises,
     }: {
         workout: Workout;
-        recentExercises: { name: string; type: ExerciseType }[];
+        exercises: Exercise[];
     } = $props();
 
     let confirmingDelete = $state(false);
@@ -174,6 +174,6 @@
             Add an exercise
         </h2>
 
-        <AddExerciseForm workoutId={workout.id} {recentExercises}/>
+        <AddExerciseForm workoutId={workout.id} {exercises}/>
     </div>
 </div>

@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\Exercise;
 use App\Models\ExerciseSet;
+use App\Models\WorkoutExercise;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -19,7 +19,7 @@ class ExerciseSetFactory extends Factory
     public function definition(): array
     {
         return [
-            'exercise_id' => Exercise::factory(),
+            'workout_exercise_id' => WorkoutExercise::factory(),
             'reps' => fake()->numberBetween(5, 12),
             'weight' => fake()->randomFloat(2, 45, 315),
         ];

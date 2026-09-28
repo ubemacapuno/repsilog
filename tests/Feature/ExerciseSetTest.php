@@ -1,13 +1,13 @@
 <?php
 
-use App\Models\Exercise;
 use App\Models\ExerciseSet;
+use App\Models\WorkoutExercise;
 
-it('belongs to the exercise it was logged under', function () {
-    $exercise = Exercise::factory()->create();
-    $set = ExerciseSet::factory()->for($exercise)->create();
+it('belongs to the workout entry it was logged under', function () {
+    $entry = WorkoutExercise::factory()->create();
+    $set = ExerciseSet::factory()->for($entry)->create();
 
-    expect($set->exercise->id)->toBe($exercise->id);
+    expect($set->workoutExercise->id)->toBe($entry->id);
 });
 
 it('casts reps sent as a string to an integer', function () {
@@ -28,14 +28,14 @@ it('rounds a weight carrying more precision than two decimal places', function (
     expect($set->weight)->toBe('42.57');
 });
 
-it('does not allow the parent exercise to be mass assigned', function () {
-    $mine = Exercise::factory()->create();
-    $theirs = Exercise::factory()->create();
+it('does not allow the parent workout entry to be mass assigned', function () {
+    $mine = WorkoutExercise::factory()->create();
+    $theirs = WorkoutExercise::factory()->create();
 
     $set = $mine->sets()->create([
         'reps' => 8,
-        'exercise_id' => $theirs->id,
+        'workout_exercise_id' => $theirs->id,
     ]);
 
-    expect($set->exercise_id)->toBe($mine->id);
+    expect($set->workout_exercise_id)->toBe($mine->id);
 });

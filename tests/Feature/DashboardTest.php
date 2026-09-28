@@ -1,9 +1,9 @@
 <?php
 
-use App\Models\Exercise;
 use App\Models\ExerciseSet;
 use App\Models\User;
 use App\Models\Workout;
+use App\Models\WorkoutExercise;
 use Inertia\Testing\AssertableInertia;
 
 test('guests are redirected to the login page', function () {
@@ -21,7 +21,7 @@ test('authenticated users can visit the dashboard', function () {
 
 test('the dashboard counts only the users own completed sets', function () {
     $user = User::factory()->create();
-    $exercise = Exercise::factory()
+    $exercise = WorkoutExercise::factory()
         ->for(Workout::factory()->for($user)->create(['performed_at' => now()]))
         ->create();
 
@@ -51,10 +51,10 @@ test('the dashboard counts only the users own completed sets', function () {
 test('volume covers only the last seven days, while set counts stay lifetime', function () {
     $user = User::factory()->create();
 
-    $recent = Exercise::factory()
+    $recent = WorkoutExercise::factory()
         ->for(Workout::factory()->for($user)->create(['performed_at' => now()->subDays(2)]))
         ->create();
-    $old = Exercise::factory()
+    $old = WorkoutExercise::factory()
         ->for(Workout::factory()->for($user)->create(['performed_at' => now()->subDays(8)]))
         ->create();
 
@@ -92,7 +92,7 @@ test('a future dated workout is not counted in this week', function () {
 
 test('fractional plate weight rounds rather than truncates', function () {
     $user = User::factory()->create();
-    $exercise = Exercise::factory()
+    $exercise = WorkoutExercise::factory()
         ->for(Workout::factory()->for($user)->create(['performed_at' => now()]))
         ->create();
 

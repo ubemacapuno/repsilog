@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Enums\ExerciseType;
 use App\Models\Exercise;
-use App\Models\ExerciseSet;
 use App\Models\User;
 use App\Models\Workout;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -118,17 +117,35 @@ class DatabaseSeeder extends Seeder
         ]);
     }
 
+    /**
+     * Reuses the catalog the sessions above already built, so the history looks
+     * like the same lifter repeating the same movements.
+     */
     private function seedRecentHistory(User $user): void
     {
+        $catalog = $user->exercises()
+            ->where('type', ExerciseType::Strength)
+            ->pluck('id');
+
         Workout::factory()
             ->for($user)
             ->count(8)
-            ->has(
-                Exercise::factory()
-                    ->count(3)
-                    ->has(ExerciseSet::factory()->count(3)->completed(), 'sets')
-            )
-            ->create();
+            ->create()
+            ->each(function (Workout $workout) use ($catalog): void {
+                foreach ($catalog->random(3) as $exerciseId) {
+                    $workout->exercises()
+                        ->create(['exercise_id' => $exerciseId])
+                        ->sets()
+                        ->createMany(array_map(
+                            fn (): array => [
+                                'reps' => fake()->numberBetween(5, 12),
+                                'weight' => fake()->randomFloat(2, 45, 315),
+                                'completed_at' => $workout->performed_at,
+                            ],
+                            range(1, 3),
+                        ));
+                }
+            });
     }
 
     /**
@@ -138,7 +155,7 @@ class DatabaseSeeder extends Seeder
     {
         foreach ($exercises as $name => $sets) {
             $workout->exercises()
-                ->create(['name' => $name])
+                ->create(['exercise_id' => $this->catalog($workout, $name)->id])
                 ->sets()
                 ->createMany(array_map(
                     fn (array $set): array => [
@@ -160,9 +177,18 @@ class DatabaseSeeder extends Seeder
     {
         foreach ($exercises as $exercise) {
             $workout->exercises()->create([
-                ...$exercise,
-                'type' => ExerciseType::Cardio,
+                'exercise_id' => $this->catalog($workout, $exercise['name'], ExerciseType::Cardio)->id,
+                'duration_seconds' => $exercise['duration_seconds'],
+                'distance_miles' => $exercise['distance_miles'],
             ]);
         }
+    }
+
+    private function catalog(Workout $workout, string $name, ExerciseType $type = ExerciseType::Strength): Exercise
+    {
+        return $workout->user->exercises()->firstOrCreate(
+            ['name' => $name],
+            ['type' => $type],
+        );
     }
 }

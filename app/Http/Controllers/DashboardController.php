@@ -46,7 +46,7 @@ class DashboardController extends Controller
     {
         return ExerciseSet::query()
             ->whereNotNull('completed_at')
-            ->whereHas('exercise.workout', function (Builder $query) use ($userId, $since): void {
+            ->whereHas('workoutExercise.workout', function (Builder $query) use ($userId, $since): void {
                 $query->where('user_id', $userId)
                     ->when($since, fn (Builder $query) => $query->where('performed_at', '>=', $since));
             });

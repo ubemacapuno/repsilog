@@ -9,11 +9,16 @@ class ExercisePolicy
 {
     public function update(User $user, Exercise $exercise): bool
     {
-        return $user->id === $exercise->workout->user_id;
+        return $user->id === $exercise->user_id;
     }
 
+    /**
+     * Deleting an exercise that a workout still references would take those
+     * logged sets with it, so the catalog only lets go of unused entries.
+     */
     public function delete(User $user, Exercise $exercise): bool
     {
-        return $user->id === $exercise->workout->user_id;
+        return $user->id === $exercise->user_id
+            && $exercise->workoutExercises()->doesntExist();
     }
 }

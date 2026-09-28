@@ -4,6 +4,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExerciseController;
 use App\Http\Controllers\ExerciseSetController;
 use App\Http\Controllers\WorkoutController;
+use App\Http\Controllers\WorkoutExerciseController;
 
 Route::inertia('/', 'Welcome')->name('home');
 
@@ -14,14 +15,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // index, and workouts.show edits its own fields in place.
     Route::resource('workouts', WorkoutController::class)->except(['create', 'edit']);
 
-    Route::post('workouts/{workout}/exercises', [ExerciseController::class, 'store'])
-        ->name('exercises.store');
+    // The catalog of movements the user reuses across workouts. Renaming here
+    // renames everywhere, and deleting is only allowed while unused.
+    Route::get('exercises', [ExerciseController::class, 'index'])->name('exercises.index');
     Route::patch('exercises/{exercise}', [ExerciseController::class, 'update'])
         ->name('exercises.update');
     Route::delete('exercises/{exercise}', [ExerciseController::class, 'destroy'])
         ->name('exercises.destroy');
 
-    Route::post('exercises/{exercise}/sets', [ExerciseSetController::class, 'store'])
+    Route::post('workouts/{workout}/exercises', [WorkoutExerciseController::class, 'store'])
+        ->name('workout-exercises.store');
+    Route::patch('workout-exercises/{workoutExercise}', [WorkoutExerciseController::class, 'update'])
+        ->name('workout-exercises.update');
+    Route::delete('workout-exercises/{workoutExercise}', [WorkoutExerciseController::class, 'destroy'])
+        ->name('workout-exercises.destroy');
+
+    Route::post('workout-exercises/{workoutExercise}/sets', [ExerciseSetController::class, 'store'])
         ->name('sets.store');
     Route::patch('sets/{set}', [ExerciseSetController::class, 'update'])
         ->name('sets.update');

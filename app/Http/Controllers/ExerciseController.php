@@ -2,48 +2,44 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreExerciseRequest;
 use App\Http\Requests\UpdateExerciseRequest;
 use App\Models\Exercise;
-use App\Models\Workout;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class ExerciseController extends Controller
 {
-    public function store(StoreExerciseRequest $request, Workout $workout): RedirectResponse
+    public function index(Request $request): Response
     {
-        $this->authorize('update', $workout);
-
-        $workout->exercises()->create($request->validated());
-
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Exercise added.')]);
-
-        return back();
+        return Inertia::render('exercises/Index', [
+            'exercises' => $request->user()->exercises()
+                ->withCount('workoutExercises')
+                ->orderBy('name')
+                ->paginate(15)
+                ->withQueryString(),
+        ]);
     }
 
     public function update(UpdateExerciseRequest $request, Exercise $exercise): RedirectResponse
     {
-        $exercise->load('workout');
-
         $this->authorize('update', $exercise);
 
         $exercise->update($request->validated());
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Exercise updated.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Exercise renamed.')]);
 
         return back();
     }
 
     public function destroy(Exercise $exercise): RedirectResponse
     {
-        $exercise->load('workout');
-
         $this->authorize('delete', $exercise);
 
         $exercise->delete();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Exercise removed.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Exercise deleted.')]);
 
         return back();
     }

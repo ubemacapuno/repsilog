@@ -28,11 +28,14 @@ class Workout extends Model
     }
 
     /**
-     * @return HasMany<Exercise, $this>
+     * The exercises as they were performed in this workout, each holding its
+     * own sets. The reusable names live on Exercise.
+     *
+     * @return HasMany<WorkoutExercise, $this>
      */
     public function exercises(): HasMany
     {
-        return $this->hasMany(Exercise::class);
+        return $this->hasMany(WorkoutExercise::class);
     }
 
     /**

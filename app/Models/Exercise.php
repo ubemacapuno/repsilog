@@ -10,6 +10,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
+ * A movement the user has logged at least once, reused across every workout
+ * that includes it.
+ *
  * @property ExerciseType $type
  */
 class Exercise extends Model
@@ -20,9 +23,6 @@ class Exercise extends Model
     protected $fillable = [
         'name',
         'type',
-        'duration_seconds',
-        'distance_miles',
-        'notes',
     ];
 
     protected $attributes = [
@@ -30,19 +30,19 @@ class Exercise extends Model
     ];
 
     /**
-     * @return BelongsTo<Workout, $this>
+     * @return BelongsTo<User, $this>
      */
-    public function workout(): BelongsTo
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(Workout::class);
+        return $this->belongsTo(User::class);
     }
 
     /**
-     * @return HasMany<ExerciseSet, $this>
+     * @return HasMany<WorkoutExercise, $this>
      */
-    public function sets(): HasMany
+    public function workoutExercises(): HasMany
     {
-        return $this->hasMany(ExerciseSet::class);
+        return $this->hasMany(WorkoutExercise::class);
     }
 
     /**
@@ -52,7 +52,6 @@ class Exercise extends Model
     {
         return [
             'type' => ExerciseType::class,
-            'distance_miles' => 'decimal:2',
         ];
     }
 }

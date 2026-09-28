@@ -1,18 +1,25 @@
 export type ExerciseType = 'strength' | 'cardio';
 
+export type Exercise = {
+    id: number;
+    name: string;
+    type: ExerciseType;
+    workout_exercises_count?: number;
+};
+
 export type ExerciseSet = {
     id: number;
-    exercise_id: number;
+    workout_exercise_id: number;
     reps: number;
     weight: string | null;
     completed_at: string | null;
 };
 
-export type Exercise = {
+export type WorkoutExercise = {
     id: number;
     workout_id: number;
-    name: string;
-    type: ExerciseType;
+    exercise_id: number;
+    exercise: Exercise;
     duration_seconds: number | null;
     distance_miles: string | null;
     notes: string | null;
@@ -24,7 +31,7 @@ export type Workout = {
     title: string | null;
     performed_at: string;
     notes: string | null;
-    exercises?: Exercise[];
+    exercises?: WorkoutExercise[];
     exercises_count?: number;
 };
 

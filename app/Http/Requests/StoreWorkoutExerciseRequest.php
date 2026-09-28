@@ -7,10 +7,12 @@ use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class StoreExerciseRequest extends FormRequest
+class StoreWorkoutExerciseRequest extends FormRequest
 {
     /**
      * Sets are not submitted here. They are added one at a time afterwards.
+     * `type` only applies when the name is new to the catalog, because an
+     * existing exercise keeps the type it was created with.
      *
      * @return array<string, ValidationRule|array<mixed>|string>
      */
