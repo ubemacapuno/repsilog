@@ -24,7 +24,7 @@
     }: {
         stats: {
             workouts: number;
-            workoutsThisWeek: number;
+            workoutsLast7Days: number;
             setsCompleted: number;
             volumeLast7Days: number;
         };
@@ -33,7 +33,10 @@
 
     const tiles: { label: string; value: string; unit?: string }[] = $derived([
         { label: 'Workouts', value: stats.workouts.toLocaleString() },
-        { label: 'This week', value: stats.workoutsThisWeek.toLocaleString() },
+        {
+            label: 'Workouts (7d)',
+            value: stats.workoutsLast7Days.toLocaleString(),
+        },
         { label: 'Sets done', value: stats.setsCompleted.toLocaleString() },
         {
             label: 'Volume (7d)',
