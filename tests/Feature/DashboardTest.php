@@ -44,7 +44,10 @@ test('the dashboard counts only the users own completed sets', function () {
             ->where('stats.workoutsThisWeek', 1)
             ->where('stats.setsCompleted', 1)
             ->where('stats.volumeLast7Days', 1000)
-            ->has('recentWorkoutSessions', 1)
+            ->has('recentWorkouts', 1, fn (AssertableInertia $workout) => $workout
+                ->where('exercises_count', 1)
+                ->etc()
+            )
         );
 });
 

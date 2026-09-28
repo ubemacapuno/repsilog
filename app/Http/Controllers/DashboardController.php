@@ -30,7 +30,7 @@ class DashboardController extends Controller
                     now()->subDays(7),
                 )->sum(DB::raw('reps * COALESCE(weight, 0)'))),
             ],
-            'recentWorkoutSessions' => $user->workoutSessions()
+            'recentWorkouts' => $user->workoutSessions()
                 ->withCount('exercises')
                 ->latest('performed_at')
                 ->latest('id')
