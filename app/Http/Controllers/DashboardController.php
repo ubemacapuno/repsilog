@@ -19,8 +19,8 @@ class DashboardController extends Controller
         return Inertia::render('Dashboard', [
             'stats' => [
                 'workouts' => $user->workoutSessions()->count(),
-                'workoutsThisWeek' => $user->workoutSessions()
-                    ->whereBetween('performed_at', [now()->startOfWeek(), now()->endOfWeek()])
+                'workoutsLast7Days' => $user->workoutSessions()
+                    ->whereBetween('performed_at', [now()->subDays(7), now()])
                     ->count(),
                 // TODO: two queries run here. completedSets() is rebuilt for the
                 // lifetime count and again for the 7-day sum. Look into collapsing them.
@@ -48,7 +48,7 @@ class DashboardController extends Controller
             ->whereNotNull('completed_at')
             ->whereHas('workoutSessionExercise.workoutSession', function (Builder $query) use ($userId, $since): void {
                 $query->where('user_id', $userId)
-                    ->when($since, fn (Builder $query) => $query->where('performed_at', '>=', $since));
+                    ->when($since, fn (Builder $query) => $query->whereBetween('performed_at', [$since, now()]));
             });
     }
 }
