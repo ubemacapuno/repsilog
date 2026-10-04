@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\UpdateExerciseRequest;
 use App\Models\Exercise;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -17,6 +19,22 @@ class ExerciseController extends Controller
             'exercises' => $request->user()->exercises()
                 ->withCount('workoutSessionExercises')
                 ->orderBy('name')
+                ->paginate(15)
+                ->withQueryString(),
+        ]);
+    }
+
+    public function show(Request $request, Exercise $exercise): Response
+    {
+        $this->authorize('view', $exercise);
+
+        return Inertia::render('exercises/Show', [
+            'exercise' => $exercise->only(['id', 'name', 'type']),
+            'workouts' => $request->user()->workoutSessions()
+                ->whereHas('exercises', fn (Builder $query) => $query->whereBelongsTo($exercise))
+                ->with(['exercises' => fn (HasMany $query) => $query->whereBelongsTo($exercise)->with('sets')])
+                ->latest('performed_at')
+                ->latest('id')
                 ->paginate(15)
                 ->withQueryString(),
         ]);

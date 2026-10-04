@@ -18,6 +18,7 @@
     import AppHead from '@/components/AppHead.svelte';
     import ConfirmDialog from '@/components/ConfirmDialog.svelte';
     import {Button} from '@/components/ui/button';
+    import {show} from '@/routes/exercises';
     import type {Exercise, Paginated} from '@/types';
 
     let {exercises}: { exercises: Paginated<Exercise> } = $props();
@@ -144,7 +145,17 @@
                 <td
                     class="py-2 pr-4 text-right font-mono tabular-nums text-muted-foreground"
                 >
-                    {used}
+                    {#if used > 0}
+                        <Link
+                            href={show(exercise.id)}
+                            title="Workouts using {exercise.name}"
+                            class="text-primary underline decoration-dotted underline-offset-4 transition-colors hover:decoration-solid"
+                        >
+                            {used}
+                        </Link>
+                    {:else}
+                        {used}
+                    {/if}
                 </td>
 
                 <td class="py-2 text-right">

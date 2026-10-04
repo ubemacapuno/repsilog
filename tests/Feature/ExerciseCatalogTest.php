@@ -49,6 +49,58 @@ it('paginates the catalog at fifteen per page', function () {
         );
 });
 
+it('lists the workouts that used an exercise, newest first', function () {
+    $user = User::factory()->create();
+    $exercise = catalogEntryFor($user);
+    $other = catalogEntryFor($user, 'Squat');
+
+    $older = WorkoutSession::factory()->for($user)->create(['performed_at' => now()->subWeek()]);
+    $newer = WorkoutSession::factory()->for($user)->create(['performed_at' => now()]);
+    $unrelated = WorkoutSession::factory()->for($user)->create();
+
+    WorkoutSessionExercise::factory()->for($older)->for($exercise)->hasSets(2)->create();
+    WorkoutSessionExercise::factory()->for($newer)->for($exercise)->create();
+    WorkoutSessionExercise::factory()->for($unrelated)->for($other)->create();
+
+    $this->actingAs($user)
+        ->get(route('exercises.show', $exercise))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('exercises/Show')
+            ->where('exercise.name', 'Bench Press')
+            ->has('workouts.data', 2)
+            ->where('workouts.data.0.id', $newer->id)
+            ->where('workouts.data.1.id', $older->id)
+            ->has('workouts.data.1.exercises.0.sets', 2)
+        );
+});
+
+it('only sends the matching entries for the exercise being viewed', function () {
+    $user = User::factory()->create();
+    $exercise = catalogEntryFor($user);
+    $workoutSession = WorkoutSession::factory()->for($user)->create();
+
+    WorkoutSessionExercise::factory()->for($workoutSession)->for($exercise)->create();
+    WorkoutSessionExercise::factory()
+        ->for($workoutSession)
+        ->for(catalogEntryFor($user, 'Squat'))
+        ->create();
+
+    $this->actingAs($user)
+        ->get(route('exercises.show', $exercise))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->has('workouts.data.0.exercises', 1)
+            ->where('workouts.data.0.exercises.0.exercise_id', $exercise->id)
+        );
+});
+
+it('does not let a user view someone elses exercise', function () {
+    $exercise = catalogEntryFor(User::factory()->create());
+
+    $this->actingAs(User::factory()->create())
+        ->get(route('exercises.show', $exercise))
+        ->assertForbidden();
+});
+
 it('renames an exercise everywhere it is used', function () {
     $user = User::factory()->create();
     $exercise = catalogEntryFor($user, 'Bench');

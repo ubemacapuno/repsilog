@@ -20,6 +20,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // The catalog of movements the user reuses across workouts. Renaming here
     // renames everywhere, and deleting is only allowed while unused.
     Route::get('exercises', [ExerciseController::class, 'index'])->name('exercises.index');
+    Route::get('exercises/{exercise}', [ExerciseController::class, 'show'])->name('exercises.show');
     Route::patch('exercises/{exercise}', [ExerciseController::class, 'update'])
         ->name('exercises.update');
     Route::delete('exercises/{exercise}', [ExerciseController::class, 'destroy'])

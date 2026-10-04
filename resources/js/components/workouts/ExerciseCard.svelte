@@ -203,7 +203,7 @@
     }
 </script>
 
-<article class="border-t border-border py-6">
+<article id="exercise-{exercise.id}" class="scroll-mt-4 border-t border-border py-6">
     <header class="flex items-start justify-between gap-6 pb-2">
         <h2 class="text-base font-semibold">{movement.name}</h2>
 
