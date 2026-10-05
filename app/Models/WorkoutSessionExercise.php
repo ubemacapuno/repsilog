@@ -41,11 +41,13 @@ class WorkoutSessionExercise extends Model
     }
 
     /**
+     * Ordered, because the UI numbers the sets by their position in this list.
+     *
      * @return HasMany<ExerciseSet, $this>
      */
     public function sets(): HasMany
     {
-        return $this->hasMany(ExerciseSet::class);
+        return $this->hasMany(ExerciseSet::class)->orderBy('id');
     }
 
     /**

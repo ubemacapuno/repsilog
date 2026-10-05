@@ -29,13 +29,14 @@ class WorkoutSession extends Model
 
     /**
      * The exercises as they were performed in this workout, each holding its
-     * own sets. The reusable names live on Exercise.
+     * own sets. The reusable names live on Exercise. Ordered, because the page
+     * renders them in list order.
      *
      * @return HasMany<WorkoutSessionExercise, $this>
      */
     public function exercises(): HasMany
     {
-        return $this->hasMany(WorkoutSessionExercise::class);
+        return $this->hasMany(WorkoutSessionExercise::class)->orderBy('id');
     }
 
     /**

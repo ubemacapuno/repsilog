@@ -8,7 +8,7 @@ use App\Models\User;
 class ExerciseSetPolicy
 {
     /**
-     * Eager-load `workoutSessionExercise.workout` before authorizing, since this runs
+     * Eager-load `workoutSessionExercise.workoutSession` before authorizing, since this runs
      * on every debounced keystroke.
      */
     public function update(User $user, ExerciseSet $set): bool

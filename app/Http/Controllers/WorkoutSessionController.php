@@ -27,7 +27,7 @@ class WorkoutSessionController extends Controller
     {
         $workoutSession = $request->user()->workoutSessions()->create($request->validated());
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('WorkoutSession started.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Workout started.')]);
 
         return to_route('workouts.show', $workoutSession);
     }
@@ -52,7 +52,7 @@ class WorkoutSessionController extends Controller
 
         $workoutSession->update($request->validated());
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('WorkoutSession updated.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Workout updated.')]);
 
         return back();
     }
@@ -63,7 +63,7 @@ class WorkoutSessionController extends Controller
 
         $workoutSession->delete();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('WorkoutSession deleted.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Workout deleted.')]);
 
         return to_route('workouts.index');
     }

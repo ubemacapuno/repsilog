@@ -47,7 +47,6 @@
 
     function choose(suggestion: Exercise) {
         name = suggestion.name;
-        chosenType = suggestion.type;
         open = false;
         highlighted = 0;
     }
