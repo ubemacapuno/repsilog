@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\UpdateExerciseRequest;
 use App\Models\Exercise;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -32,7 +32,7 @@ class ExerciseController extends Controller
             'exercise' => $exercise->only(['id', 'name', 'type']),
             'workouts' => $request->user()->workoutSessions()
                 ->whereHas('exercises', fn (Builder $query) => $query->whereBelongsTo($exercise))
-                ->with(['exercises' => fn (HasMany $query) => $query->whereBelongsTo($exercise)->with('sets')])
+                ->with(['exercises' => fn (Relation $query) => $query->whereBelongsTo($exercise)->with('sets')])
                 ->latest('performed_at')
                 ->latest('id')
                 ->paginate(15)
