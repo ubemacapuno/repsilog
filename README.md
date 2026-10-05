@@ -45,6 +45,23 @@ There is no API layer and no client-side router. Controllers return
 props, and Wayfinder means a renamed route breaks the TypeScript build instead of
 breaking a link at runtime.
 
+## Self-hosting
+
+Runs as a single Docker container on a Raspberry Pi 4B, behind
+[Tailscale](https://tailscale.com/) and nowhere else — same setup as my other
+self-hosted app, [lettuce-eat](https://github.com/damoclescj/lettuce-eat), on the
+same Pi. Full walkthrough in [docs/deployment.md](docs/deployment.md); the short
+version:
+
+```bash
+cp .env.production.example .env.production   # fill in APP_KEY and APP_URL
+docker compose up -d --build
+sudo tailscale serve --bg --https=8444 http://127.0.0.1:8081
+```
+
+That publishes it at `https://ube-pi.tail908b50.ts.net:8444/`, reachable from any
+device on my tailnet and from nowhere else.
+
 ## Getting started
 
 ```bash
