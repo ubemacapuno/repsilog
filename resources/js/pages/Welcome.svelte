@@ -10,13 +10,13 @@
     const auth = $derived(page.props.auth);
 </script>
 
-<AppHead title="Rep Silog" />
+<AppHead title="RepSilog" />
 
 <div
     class="flex min-h-screen flex-col items-center justify-center gap-10 bg-background p-6 text-foreground"
 >
     <div class="flex flex-col items-center gap-3 text-center">
-        <h1 class="font-mono text-3xl tracking-[0.3em] uppercase">Rep Silog</h1>
+        <h1 class="font-mono text-3xl tracking-[0.3em] uppercase">RepSilog</h1>
         <AppLogoIcon class="size-16" />
         <p class="max-w-sm text-sm text-muted-foreground">
             Log every set, every rep, every mile. Nothing else.

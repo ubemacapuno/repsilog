@@ -1,4 +1,4 @@
-# Rep Silog
+# RepSilog
 
 A self-hosted workout log. Log a session, add the exercise movements you did, and record
 every set. The plan is to run it on my Raspberry Pi 4B behind [Tailscale](https://tailscale.com/), so nothing is exposed to the public internet.
@@ -9,7 +9,7 @@ The name is a reference to [silog](https://en.wikipedia.org/wiki/Silog), the Fil
 
 I work out pretty regularly but have never tracked any of my sessions.
 I also have been interested in building on a **Laravel + Inertia + Svelte** stack to get that SPA feel,
-so this app was the perfect excuse to try it out, while solving a real problem I have. 
+so this app was the perfect excuse to try it out, while solving a real problem I have.
 
 ## What it does
 
