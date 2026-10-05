@@ -1,4 +1,4 @@
-import { format, intervalToDuration } from 'date-fns';
+import { format } from 'date-fns';
 
 export function toDateTimeLocal(value: string | Date = new Date()): string {
     return format(value, "yyyy-MM-dd'T'HH:mm");
@@ -11,16 +11,15 @@ export function fromDateTimeLocal(value: string): string {
 }
 
 export function formatDuration(totalSeconds: number | null): string {
-    const {
-        hours = 0,
-        minutes = 0,
-        seconds = 0,
-    } = intervalToDuration({ start: 0, end: (totalSeconds ?? 0) * 1000 });
+    const total = Math.max(0, Math.trunc(totalSeconds ?? 0));
+    const hours = Math.floor(total / 3600);
+    const minutes = Math.floor((total % 3600) / 60);
+    const seconds = total % 60;
 
     const parts = [
         hours ? `${hours}h` : '',
         minutes ? `${minutes}m` : '',
-        seconds || (!hours && !minutes) ? `${seconds}s` : '',
+        seconds || (hours === 0 && minutes === 0) ? `${seconds}s` : '',
     ];
 
     return parts.filter(Boolean).join(' ');

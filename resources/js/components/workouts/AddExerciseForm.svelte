@@ -27,8 +27,8 @@
     const suggestions = $derived(
         exercises
             .filter((exercise) => exercise.name.toLowerCase().includes(query))
-            .slice(0, 12)
-            .sort((a, b) => a.name.localeCompare(b.name)),
+            .sort((a, b) => a.name.localeCompare(b.name))
+            .slice(0, 12),
     );
 
     const known = $derived(

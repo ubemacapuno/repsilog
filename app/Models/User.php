@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+// TODO: enable email verification before deploying publicly
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
