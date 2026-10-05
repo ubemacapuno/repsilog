@@ -1,13 +1,12 @@
 <script lang="ts">
     import { Link, page } from '@inertiajs/svelte';
-    import BookOpen from '@lucide/svelte/icons/book-open';
-    import Folder from '@lucide/svelte/icons/folder';
     import LayoutGrid from '@lucide/svelte/icons/layout-grid';
     import Menu from '@lucide/svelte/icons/menu';
     import Search from '@lucide/svelte/icons/search';
     import AppLogo from '@/components/AppLogo.svelte';
     import AppLogoIcon from '@/components/AppLogoIcon.svelte';
     import Breadcrumbs from '@/components/Breadcrumbs.svelte';
+    import GithubIcon from '@/components/GithubIcon.svelte';
     import {
         Avatar,
         AvatarFallback,
@@ -68,13 +67,8 @@
     const rightNavItems: NavItem[] = [
         {
             title: 'Repository',
-            href: 'https://github.com/laravel/svelte-starter-kit',
-            icon: Folder,
-        },
-        {
-            title: 'Documentation',
-            href: 'https://laravel.com/docs/starter-kits#svelte',
-            icon: BookOpen,
+            href: 'https://github.com/ubemacapuno/repsilog',
+            icon: GithubIcon,
         },
     ];
 </script>
