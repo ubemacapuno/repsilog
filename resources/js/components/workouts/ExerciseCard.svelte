@@ -6,6 +6,7 @@
     import ConfirmDialog from '@/components/ConfirmDialog.svelte';
     import SetRow from '@/components/workouts/SetRow.svelte';
     import {formatDuration} from '@/lib/datetime';
+    import {formatDecimal} from '@/lib/number';
     import type {ExerciseSet, SetDraft, WorkoutSession, WorkoutSessionExercise} from '@/types';
     import { Plus, X } from '@lucide/svelte';
 
@@ -16,7 +17,7 @@
     const toDraft = (set: ExerciseSet): SetDraft => ({
         id: set.id,
         reps: String(set.reps),
-        weight: set.weight ?? '',
+        weight: formatDecimal(set.weight),
         completed: set.completed_at !== null,
         completedAt: set.completed_at,
     });
@@ -117,8 +118,18 @@
             .post(ExerciseSetController.store.url(exercise.id), {}, visit);
     }
 
-    function removeSet(id: number) {
-        if (id < 0) {
+    let confirmingSetRemoval = $state(false);
+    let pendingSetId = $state<number | null>(null);
+
+    function confirmSetRemoval(id: number) {
+        pendingSetId = id;
+        confirmingSetRemoval = true;
+    }
+
+    function removeSet() {
+        const id = pendingSetId;
+
+        if (id === null || id < 0) {
             return;
         }
 
@@ -130,6 +141,8 @@
                 ),
             )
             .delete(ExerciseSetController.destroy.url(id), visit);
+
+        pendingSetId = null;
     }
 
     let confirmingDelete = $state(false);
@@ -157,7 +170,7 @@
 
         minutes = String(Math.floor(total / 60));
         seconds = String(total % 60);
-        distance = exercise.distance_miles ?? '';
+        distance = formatDecimal(exercise.distance_miles);
         editing = true;
     }
 
@@ -180,7 +193,7 @@
 
         if (
             duration === exercise.duration_seconds &&
-            miles === exercise.distance_miles
+            (miles ?? '') === formatDecimal(exercise.distance_miles)
         ) {
             return;
         }
@@ -205,7 +218,7 @@
 
 <article id="exercise-{exercise.id}" class="scroll-mt-4 border-t border-border py-6">
     <header class="flex items-start justify-between gap-6 pb-2">
-        <h2 class="text-base font-semibold">{movement.name}</h2>
+        <h2 class="text-base font-bold text-primary">{movement.name}</h2>
 
         <div class="flex items-start gap-4">
             {#if movement.type === 'strength'}
@@ -268,9 +281,17 @@
                     {set}
                     {index}
                     onchange={(patch) => Object.assign(sets[index], patch)}
-                    onremove={() => removeSet(set.id)}
+                    onremove={() => confirmSetRemoval(set.id)}
                 />
             {/each}
+
+            <ConfirmDialog
+                bind:open={confirmingSetRemoval}
+                title="Delete this set?"
+                description="This removes the logged set from {movement.name}. This cannot be undone."
+                confirmLabel="Delete set"
+                onconfirm={removeSet}
+            />
 
             <button
                 type="button"
@@ -332,7 +353,7 @@
             </span>
             {#if exercise.distance_miles}
                 <span class="font-mono text-2xl font-semibold tabular-nums">
-                    {exercise.distance_miles}
+                    {formatDecimal(exercise.distance_miles)}
                     <span class="font-mono text-xs text-muted-foreground"
                     >mi</span
                     >

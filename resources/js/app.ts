@@ -25,7 +25,13 @@ void createInertiaApp({
         color: '#4B5563',
     },
     defaults: {
-        visitOptions: () => ({ viewTransition: true }),
+        // Transition between pages, but never on the redirect back from an
+        // inline save. Cross-fading the whole page after every set edit reads
+        // as a full reload. This callback is merged over the per-visit options,
+        // so the rule has to live here rather than at each call site.
+        visitOptions: (_href, options) => ({
+            viewTransition: (options.method ?? 'get') === 'get',
+        }),
     },
 });
 

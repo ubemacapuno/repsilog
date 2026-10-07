@@ -15,11 +15,11 @@ class ExerciseSetController extends Controller
 
         $this->authorize('update', $workoutSessionExercise);
 
-        $previous = $workoutSessionExercise->sets()->latest('id')->first();
+        $previous = $workoutSessionExercise->sets()->reorder('id', 'desc')->first();
 
         $workoutSessionExercise->sets()->create([
             'reps' => $previous->reps ?? 0,
-            'weight' => $previous->weight ?? null,
+            'weight' => $previous?->weight,
             'completed_at' => null,
         ]);
 
