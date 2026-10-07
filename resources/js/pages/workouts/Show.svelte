@@ -45,9 +45,10 @@
         const nextTitle = editingTitle
             ? (trimmed === '' ? null : trimmed)
             : (workout.title ?? null);
-        const nextDate = editingDate
-            ? performedAt
-            : toDateTimeLocal(workout.performed_at);
+        const nextDate =
+            editingDate && performedAt !== ''
+                ? performedAt
+                : toDateTimeLocal(workout.performed_at);
 
         editingTitle = false;
         editingDate = false;

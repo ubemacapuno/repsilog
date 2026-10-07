@@ -229,14 +229,15 @@ it('copies the previous set values onto a new set', function () {
     $entry = entryOwnedBy($user);
 
     ExerciseSet::factory()->for($entry)->create(['reps' => 12, 'weight' => '95.00']);
+    ExerciseSet::factory()->for($entry)->create(['reps' => 8, 'weight' => '115.00']);
 
     $this->actingAs($user)
         ->post(route('sets.store', $entry))
         ->assertRedirect();
 
-    expect($entry->sets()->latest('id')->first())
-        ->reps->toBe(12)
-        ->weight->toBe('95.00');
+    expect($entry->sets()->get()->last())
+        ->reps->toBe(8)
+        ->weight->toBe('115.00');
 });
 
 it('saves a set and marks it complete', function () {

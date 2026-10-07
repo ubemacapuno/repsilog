@@ -43,6 +43,12 @@
         );
     }
 
+    function selectAll(event: FocusEvent) {
+        const input = event.currentTarget as HTMLInputElement;
+
+        requestAnimationFrame(() => input.select());
+    }
+
     function toggle() {
         const completed = !set.completed;
         const completedAt = completed
@@ -63,7 +69,10 @@
         aria-label="Reps"
         value={set.reps}
         oninput={(event) => onchange({ reps: event.currentTarget.value })}
-        onfocus={() => (before = signature(set))}
+        onfocus={(event) => {
+            before = signature(set);
+            selectAll(event);
+        }}
         onblur={saveIfChanged}
         class="w-16 border-b border-border bg-transparent pb-1 text-right font-mono text-2xl font-semibold tabular-nums focus:border-primary focus:outline-none"
     />
@@ -77,7 +86,10 @@
         aria-label="Weight"
         value={set.weight}
         oninput={(event) => onchange({ weight: event.currentTarget.value })}
-        onfocus={() => (before = signature(set))}
+        onfocus={(event) => {
+            before = signature(set);
+            selectAll(event);
+        }}
         onblur={saveIfChanged}
         class="w-24 border-b border-border bg-transparent pb-1 text-right font-mono text-2xl font-semibold tabular-nums focus:border-primary focus:outline-none"
     />
