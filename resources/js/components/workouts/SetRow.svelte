@@ -51,7 +51,7 @@
     }
 </script>
 
-<div class="flex items-center gap-3 py-2" data-set-key={set.key}>
+<div class="flex items-center gap-3 py-2" data-set-id={set.id}>
     <span class="w-4 font-mono text-xs text-muted-foreground">{index + 1}</span>
 
     <input
