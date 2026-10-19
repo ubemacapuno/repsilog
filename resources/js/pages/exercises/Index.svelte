@@ -121,7 +121,7 @@
                             onkeydown={(event) =>
                                     handleKeydown(event, exercise)}
                             aria-label="Exercise name"
-                            class="w-full border-b border-border bg-transparent pb-1 font-semibold focus:border-primary focus:outline-none"
+                            class="w-full border-b border-border bg-transparent pb-1 text-base font-semibold focus:border-primary focus:outline-none md:text-sm"
                         />
                     {:else}
                         <button

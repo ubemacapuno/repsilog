@@ -125,7 +125,7 @@
                     onblur={save}
                     onkeydown={handleKeydown}
                     aria-label="Performed at"
-                    class="mt-1 border-b border-border bg-transparent pb-1 font-mono text-xs tracking-widest uppercase focus:border-primary focus:outline-none"
+                    class="mt-1 border-b border-border bg-transparent pb-1 font-mono text-base tracking-widest uppercase focus:border-primary focus:outline-none md:text-xs"
                 />
             {:else}
                 <button
