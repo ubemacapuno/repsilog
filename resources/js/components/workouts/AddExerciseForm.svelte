@@ -167,7 +167,7 @@
                     id="type"
                     name="type"
                     bind:value={chosenType}
-                    class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
+                    class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-base md:text-sm shadow-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
                 >
                     <option value="strength">Strength</option>
                     <option value="cardio">Cardio</option>
