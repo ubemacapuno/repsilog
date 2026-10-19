@@ -1,6 +1,5 @@
 <script lang="ts">
-    import {router} from '@inertiajs/svelte';
-    import ExerciseSetController from '@/actions/App/Http/Controllers/ExerciseSetController';
+    import {persistSet} from '@/lib/sets';
     import type {SetDraft} from '@/types';
     import { Check, X } from '@lucide/svelte';
 
@@ -31,24 +30,8 @@
         }
 
         if (clearsCompletion || signature(set) !== before) {
-            persist(set);
+            persistSet(set);
         }
-    }
-
-    function persist(draft: SetDraft) {
-        if (draft.id < 0) {
-            return;
-        }
-
-        router.patch(
-            ExerciseSetController.update.url(draft.id),
-            {
-                reps: Number(draft.reps) || 0,
-                weight: draft.weight === '' ? null : draft.weight,
-                completed_at: draft.completedAt,
-            },
-            {preserveScroll: true, preserveState: true},
-        );
     }
 
     function selectAll(event: FocusEvent) {
@@ -64,11 +47,11 @@
             : null;
 
         onchange({completed, completedAt});
-        persist({...set, completed, completedAt});
+        persistSet({...set, completed, completedAt});
     }
 </script>
 
-<div class="flex items-center gap-3 py-2" data-set-id={set.id}>
+<div class="flex items-center gap-3 py-2" data-set-key={set.key}>
     <span class="w-4 font-mono text-xs text-muted-foreground">{index + 1}</span>
 
     <input

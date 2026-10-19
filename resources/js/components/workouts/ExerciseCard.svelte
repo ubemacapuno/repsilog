@@ -7,6 +7,7 @@
     import SetRow from '@/components/workouts/SetRow.svelte';
     import {formatDuration} from '@/lib/datetime';
     import {formatDecimal} from '@/lib/number';
+    import {persistSet} from '@/lib/sets';
     import type {ExerciseSet, SetDraft, WorkoutSession, WorkoutSessionExercise} from '@/types';
     import { Plus, X } from '@lucide/svelte';
 
@@ -14,32 +15,78 @@
 
     const movement = $derived(exercise.exercise);
 
-    const toDraft = (set: ExerciseSet): SetDraft => ({
-        id: set.id,
+    const toValues = (set: ExerciseSet) => ({
         reps: String(set.reps),
         weight: formatDecimal(set.weight),
         completed: set.completed_at !== null,
         completedAt: set.completed_at,
     });
 
+    let keySeed = 0;
+
+    const toDraft = (set: ExerciseSet): SetDraft => ({
+        key: `set-${++keySeed}`,
+        id: set.id,
+        ...toValues(set),
+    });
+
     let sets = $state<SetDraft[]>([]);
-    let focusedSetId = $state<number | null>(null);
+    let focusedSetKey = $state<string | null>(null);
 
     function trackFocus(event: FocusEvent) {
         const target = event.target;
         const row =
             target instanceof HTMLElement
-                ? target.closest<HTMLElement>('[data-set-id]')
+                ? target.closest<HTMLElement>('[data-set-key]')
                 : null;
 
-        focusedSetId = row === null ? null : Number(row.dataset.setId);
+        focusedSetKey = row === null ? null : (row.dataset.setKey ?? null);
     }
 
+    const edited = (draft: SetDraft, set: ExerciseSet) => {
+        const saved = toValues(set);
+
+        return (
+            draft.reps !== saved.reps ||
+            draft.weight !== saved.weight ||
+            draft.completed !== saved.completed
+        );
+    };
+
+    /**
+     * An optimistic set is born with a negative id that the saved row will not
+     * match, so the draft is handed the real id in place rather than being
+     * swapped for a fresh one. That keeps its key, and with it the focused
+     * input and anything typed or checked while the request was in flight.
+     */
     $effect(() => {
         const live = exercise.sets;
 
-        untrack(() => {
+        const carried = untrack(() => {
             const liveIds = new Set(live.map((set) => set.id));
+            const draftIds = new Set(sets.map((draft) => draft.id));
+            const arrivals = live.filter((set) => !draftIds.has(set.id));
+            const adopted = new Set<string>();
+
+            for (const draft of sets) {
+                if (draft.id >= 0 || liveIds.has(draft.id)) {
+                    continue;
+                }
+
+                const arrival = arrivals.shift();
+
+                if (arrival === undefined) {
+                    continue;
+                }
+
+                draft.id = arrival.id;
+
+                if (edited(draft, arrival)) {
+                    adopted.add(draft.key);
+                } else {
+                    Object.assign(draft, toValues(arrival));
+                }
+            }
 
             for (let index = sets.length - 1; index >= 0; index--) {
                 if (!liveIds.has(sets[index].id)) {
@@ -54,11 +101,20 @@
 
                 if (draft === undefined) {
                     sets.push(toDraft(set));
-                } else if (draft.id !== focusedSetId) {
-                    Object.assign(draft, toDraft(set));
+                    continue;
+                }
+
+                if (draft.key !== focusedSetKey && !adopted.has(draft.key)) {
+                    Object.assign(draft, toValues(set));
                 }
             }
+
+            return sets.filter((draft) => adopted.has(draft.key));
         });
+
+        for (const draft of carried) {
+            persistSet(draft);
+        }
     });
 
     const completed = $derived(sets.filter((set) => set.completed));
@@ -276,7 +332,7 @@
 
     {#if movement.type === 'strength'}
         <div onfocusin={trackFocus} onfocusout={() => (focusedSetId = null)}>
-            {#each sets as set, index (set.id)}
+            {#each sets as set, index (set.key)}
                 <SetRow
                     {set}
                     {index}
