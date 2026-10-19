@@ -260,6 +260,43 @@ it('saves a set and marks it complete', function () {
         ->completed_at->not->toBeNull();
 });
 
+it('does not let a set be completed without at least one rep', function () {
+    $user = User::factory()->create();
+    $set = ExerciseSet::factory()
+        ->for(entryOwnedBy($user))
+        ->create(['reps' => 0, 'completed_at' => null]);
+
+    $this->actingAs($user)
+        ->patch(route('sets.update', $set), [
+            'reps' => 0,
+            'weight' => null,
+            'completed_at' => now()->toIso8601String(),
+        ])
+        ->assertSessionHasErrors('completed_at');
+
+    expect($set->refresh()->completed_at)->toBeNull();
+});
+
+it('clears completion when a completed set drops to zero reps', function () {
+    $user = User::factory()->create();
+    $set = ExerciseSet::factory()
+        ->for(entryOwnedBy($user))
+        ->create(['reps' => 8, 'completed_at' => now()]);
+
+    $this->actingAs($user)
+        ->patch(route('sets.update', $set), [
+            'reps' => 0,
+            'weight' => null,
+            'completed_at' => null,
+        ])
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    expect($set->refresh())
+        ->reps->toBe(0)
+        ->completed_at->toBeNull();
+});
+
 it('does not let a user save a set belonging to someone else', function () {
     $set = ExerciseSet::factory()
         ->for(entryOwnedBy(User::factory()->create()))

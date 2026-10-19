@@ -18,11 +18,19 @@
 
     let before = $state('');
 
+    const canComplete = $derived(Number(set.reps) >= 1);
+
     const signature = (draft: SetDraft) =>
         `${draft.reps}|${draft.weight}|${draft.completed}`;
 
     function saveIfChanged() {
-        if (signature(set) !== before) {
+        const clearsCompletion = set.completed && !canComplete;
+
+        if (clearsCompletion) {
+            onchange({completed: false, completedAt: null});
+        }
+
+        if (clearsCompletion || signature(set) !== before) {
             persist(set);
         }
     }
@@ -109,9 +117,11 @@
     <button
         type="button"
         onclick={toggle}
+        disabled={!canComplete}
         aria-pressed={set.completed}
         aria-label="Completed"
-        class="flex size-9 shrink-0 items-center justify-center rounded-full border transition-colors {set.completed
+        title={canComplete ? undefined : 'Log at least one rep to complete this set'}
+        class="flex size-9 shrink-0 items-center justify-center rounded-full border transition-colors disabled:pointer-events-none disabled:opacity-40 {set.completed
             ? 'border-primary bg-primary text-primary-foreground'
             : 'border-muted-foreground/40 text-transparent hover:border-muted-foreground'}"
     >
