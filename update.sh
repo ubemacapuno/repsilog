@@ -16,7 +16,7 @@ echo "==> Pulling latest main"
 git pull origin main
 
 echo "==> Rebuilding image"
-"${COMPOSE[@]}" build
+"${COMPOSE[@]}" build --pull
 
 echo "==> Recreating container"
 "${COMPOSE[@]}" up -d
